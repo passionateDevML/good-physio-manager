@@ -3,9 +3,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, Calendar } from 'lucide-react';
+import { isAuthenticated } from '@/utils/auth';
 
 export default function Index() {
   const navigate = useNavigate();
+  const authenticated = isAuthenticated();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -18,9 +20,9 @@ export default function Index() {
         </div>
         <Button 
           className="bg-physio-500 hover:bg-physio-600"
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(authenticated ? '/dashboard' : '/login')}
         >
-          Se connecter
+          {authenticated ? 'Accéder au tableau de bord' : 'Se connecter'}
         </Button>
       </header>
 
@@ -51,7 +53,7 @@ export default function Index() {
             <div className="mt-10 flex gap-4">
               <Button 
                 className="bg-physio-500 hover:bg-physio-600 btn-premium shadow-soft"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate(authenticated ? '/dashboard' : '/login')}
               >
                 Commencer maintenant
                 <ArrowRight className="ml-2 h-4 w-4" />
