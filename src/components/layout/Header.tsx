@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, Search, UserCircle, LogOut, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { isAuthenticated, getCurrentUser, logout } from '@/utils/auth';
+import { isAuthenticated, getCurrentUser, logout, isAdmin } from '@/utils/auth';
 
 interface HeaderProps {
   className?: string;
@@ -20,8 +20,10 @@ interface HeaderProps {
 
 export function Header({ className }: HeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = getCurrentUser();
   const authenticated = isAuthenticated();
+  const admin = isAdmin();
 
   return (
     <header className={cn('w-full px-6 py-3 bg-white/80 backdrop-blur-md border-b border-border/50 sticky top-0 z-10 flex items-center justify-between', className)}>
@@ -75,7 +77,7 @@ export function Header({ className }: HeaderProps) {
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Paramètres</span>
                 </DropdownMenuItem>
-                {user?.role === 'admin' && (
+                {admin && (
                   <DropdownMenuItem onClick={() => navigate('/admin')}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Admin</span>

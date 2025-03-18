@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LockKeyhole, UserCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { login } from '@/utils/auth';
 
 export default function Login() {
   const [email, setEmail] = React.useState('');
@@ -20,22 +20,20 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      // This is a mock login - in a real app, connect to a backend
-      if (email === 'admin@goodphysio.com' && password === 'admin123') {
+      const success = login(email, password);
+      
+      if (success) {
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur le tableau de bord",
         });
         
-        // Store user info in localStorage (for demo purposes only)
-        localStorage.setItem('user', JSON.stringify({
-          email,
-          role: 'admin',
-          name: 'Administrateur',
-        }));
+        // Determine redirect based on role
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const redirectPath = user.role === 'admin' ? '/admin' : '/dashboard';
         
         setTimeout(() => {
-          navigate('/admin');
+          navigate(redirectPath);
         }, 1000);
       } else {
         toast({
