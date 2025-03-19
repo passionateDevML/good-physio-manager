@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,7 +37,7 @@ import { AppointmentForm } from '@/components/appointment/AppointmentForm';
 import { toast } from 'sonner';
 
 // Mock data
-const appointments = [
+const initialAppointments = [
   {
     id: '1',
     patient: { name: 'Sophie Martin', avatarUrl: '' },
@@ -80,11 +80,57 @@ const appointments = [
   }
 ];
 
+// Calendar schedule view
+const CalendarView = ({ date, appointments }) => {
+  // Time slots from 8:00 to 18:00
+  const timeSlots = Array.from({ length: 11 }, (_, i) => i + 8);
+  
+  return (
+    <div className="p-4">
+      <div className="grid grid-cols-1 gap-2">
+        {timeSlots.map((hour) => {
+          // Find appointments for this time slot
+          const appsAtThisHour = appointments.filter(app => {
+            const startTime = parseInt(app.time.split(':')[0]);
+            return startTime === hour;
+          });
+          
+          return (
+            <div key={hour} className="flex items-start">
+              <div className="w-16 text-sm text-muted-foreground py-2">
+                {`${hour}:00`}
+              </div>
+              <div className="flex-1 min-h-[60px] border-t border-border">
+                {appsAtThisHour.length > 0 ? (
+                  <div className="pl-2 py-1">
+                    {appsAtThisHour.map(app => (
+                      <div 
+                        key={app.id} 
+                        className="bg-physio-50 border-l-4 border-physio-500 p-2 rounded-r mb-1"
+                      >
+                        <div className="text-sm font-medium">{app.patient.name}</div>
+                        <div className="text-xs text-muted-foreground">{app.type}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-full w-full"></div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 interface AppointmentItemProps {
-  appointment: typeof appointments[0];
+  appointment: typeof initialAppointments[0];
+  onStatusChange: (id: string, status: 'scheduled' | 'completed' | 'cancelled' | 'in-progress') => void;
 }
 
-function AppointmentItem({ appointment }: AppointmentItemProps) {
+function AppointmentItem({ appointment, onStatusChange }: AppointmentItemProps) {
   const statusConfig = {
     'scheduled': { label: 'Planifié', color: 'bg-amber-100 text-amber-700' },
     'completed': { label: 'Terminé', color: 'bg-emerald-100 text-emerald-700' },
@@ -128,11 +174,17 @@ function AppointmentItem({ appointment }: AppointmentItemProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
+                <DropdownMenuItem 
+                  className="cursor-pointer flex items-center gap-2"
+                  onClick={() => onStatusChange(appointment.id, 'completed')}
+                >
                   <Check className="h-4 w-4" />
                   <span>Marquer comme terminé</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
+                <DropdownMenuItem 
+                  className="cursor-pointer flex items-center gap-2"
+                  onClick={() => onStatusChange(appointment.id, 'cancelled')}
+                >
                   <X className="h-4 w-4" />
                   <span>Annuler</span>
                 </DropdownMenuItem>
@@ -153,8 +205,12 @@ function AppointmentItem({ appointment }: AppointmentItemProps) {
 
 export default function Appointments() {
   const [date, setDate] = useState<Date>(new Date());
-  const [appointmentsList, setAppointmentsList] = useState(appointments);
+  const [appointmentsList, setAppointmentsList] = useState(initialAppointments);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    type: 'Tous',
+    status: 'Tous'
+  });
   
   // Format today's date
   const formattedDate = format(date, 'dd MMMM yyyy', { locale: fr });
@@ -195,6 +251,46 @@ export default function Appointments() {
     setIsDialogOpen(false);
     toast.success('Rendez-vous créé avec succès');
   };
+
+  const handleStatusChange = (id: string, newStatus: 'scheduled' | 'completed' | 'cancelled' | 'in-progress') => {
+    const updatedAppointments = appointmentsList.map(app => 
+      app.id === id ? { ...app, status: newStatus } : app
+    );
+    setAppointmentsList(updatedAppointments);
+    
+    const statusLabels = {
+      'completed': 'terminé',
+      'cancelled': 'annulé',
+      'in-progress': 'en cours',
+      'scheduled': 'planifié'
+    };
+    
+    toast.success(`Rendez-vous marqué comme ${statusLabels[newStatus]}`);
+  };
+
+  const handleFilterChange = (filterType: 'type' | 'status', value: string) => {
+    setFilters(prev => ({ ...prev, [filterType]: value }));
+  };
+
+  const applyFilters = () => {
+    // Prepare filtered list based on filters
+    toast.success('Filtres appliqués avec succès');
+  };
+
+  // Filter appointments based on selected filters
+  const filteredAppointments = appointmentsList.filter(app => {
+    // Filter by type
+    if (filters.type !== 'Tous' && !app.type.includes(filters.type)) {
+      return false;
+    }
+    
+    // Filter by status
+    if (filters.status === 'Planifié' && app.status !== 'scheduled') return false;
+    if (filters.status === 'Terminé' && app.status !== 'completed') return false;
+    if (filters.status === 'Annulé' && app.status !== 'cancelled') return false;
+    
+    return true;
+  });
 
   return (
     <Layout>
@@ -289,16 +385,24 @@ export default function Appointments() {
               
               <TabsContent value="list" className="mt-0 p-0">
                 <div className="p-4 space-y-3">
-                  {appointmentsList.map((appointment) => (
-                    <AppointmentItem key={appointment.id} appointment={appointment} />
-                  ))}
+                  {filteredAppointments.length > 0 ? (
+                    filteredAppointments.map((appointment) => (
+                      <AppointmentItem 
+                        key={appointment.id} 
+                        appointment={appointment} 
+                        onStatusChange={handleStatusChange}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Aucun rendez-vous ne correspond à vos critères
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               
               <TabsContent value="calendar" className="mt-0 p-0">
-                <div className="flex items-center justify-center h-64 text-muted-foreground">
-                  Vue agenda à venir
-                </div>
+                <CalendarView date={date} appointments={filteredAppointments} />
               </TabsContent>
             </Tabs>
           </Card>
@@ -319,7 +423,8 @@ export default function Appointments() {
                         type="checkbox" 
                         id={`type-${type}`} 
                         className="h-4 w-4 rounded border-gray-300 text-physio-600 focus:ring-physio-500"
-                        defaultChecked={type === 'Tous'}
+                        checked={filters.type === type}
+                        onChange={() => handleFilterChange('type', type)}
                       />
                       <label htmlFor={`type-${type}`} className="ml-2 text-sm text-gray-700">
                         {type}
@@ -338,7 +443,8 @@ export default function Appointments() {
                         type="checkbox" 
                         id={`status-${status}`} 
                         className="h-4 w-4 rounded border-gray-300 text-physio-600 focus:ring-physio-500"
-                        defaultChecked={status === 'Tous'}
+                        checked={filters.status === status}
+                        onChange={() => handleFilterChange('status', status)}
                       />
                       <label htmlFor={`status-${status}`} className="ml-2 text-sm text-gray-700">
                         {status}
@@ -348,7 +454,10 @@ export default function Appointments() {
                 </div>
               </div>
               
-              <Button className="w-full flex items-center gap-2">
+              <Button 
+                className="w-full flex items-center gap-2"
+                onClick={applyFilters}
+              >
                 <Filter className="h-4 w-4" />
                 <span>Appliquer les filtres</span>
               </Button>
