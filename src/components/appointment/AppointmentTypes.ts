@@ -53,3 +53,14 @@ export const initialAppointments: Appointment[] = [
     notes: 'Contrôle de la mobilité'
   }
 ];
+
+// Export the type for use in other components
+export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled' | 'in-progress';
+
+// Status label mapping
+export const statusLabels = {
+  'scheduled': 'Planifié',
+  'completed': 'Terminé', 
+  'cancelled': 'Annulé',
+  'in-progress': 'En cours'
+};

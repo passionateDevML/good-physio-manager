@@ -1,14 +1,7 @@
 
 import React from 'react';
-
-interface Appointment {
-  id: string;
-  patient: { name: string; avatarUrl: string };
-  time: string;
-  type: string;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'in-progress';
-  notes?: string;
-}
+import { cn } from '@/lib/utils';
+import { Appointment } from './AppointmentTypes';
 
 interface CalendarViewProps {
   date: Date;
@@ -18,6 +11,16 @@ interface CalendarViewProps {
 export function CalendarView({ date, appointments }: CalendarViewProps) {
   // Time slots from 8:00 to 18:00
   const timeSlots = Array.from({ length: 11 }, (_, i) => i + 8);
+  
+  const getAppointmentStatusColor = (status: string) => {
+    switch(status) {
+      case 'scheduled': return 'border-blue-500 bg-blue-50';
+      case 'completed': return 'border-green-500 bg-green-50';
+      case 'cancelled': return 'border-red-500 bg-red-50';
+      case 'in-progress': return 'border-amber-500 bg-amber-50';
+      default: return 'border-gray-500 bg-gray-50';
+    }
+  };
   
   return (
     <div className="p-4">
@@ -40,7 +43,10 @@ export function CalendarView({ date, appointments }: CalendarViewProps) {
                     {appsAtThisHour.map(app => (
                       <div 
                         key={app.id} 
-                        className="bg-physio-50 border-l-4 border-physio-500 p-2 rounded-r mb-1"
+                        className={cn(
+                          "border-l-4 p-2 rounded-r mb-1",
+                          getAppointmentStatusColor(app.status)
+                        )}
                       >
                         <div className="text-sm font-medium">{app.patient.name}</div>
                         <div className="text-xs text-muted-foreground">{app.type}</div>

@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { UserPlus, Search, Filter } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { UserPlus, Search, Filter, X } from 'lucide-react';
 import { PatientForm } from '@/components/patient/PatientForm';
 import { toast } from 'sonner';
 
@@ -119,12 +122,35 @@ export default function Patients() {
     condition: '',
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [filters, setFilters] = useState({
+    hasAppointment: false,
+    condition: 'all',
+    ageRange: 'all'
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
-  const filteredPatients = patients.filter(patient => 
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.condition.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Apply filters to the patients list
+  const filteredPatients = patients.filter(patient => {
+    // Search filter
+    const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          patient.condition.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    
+    // Appointment filter
+    if (filters.hasAppointment && !patient.nextAppointment) return false;
+    
+    // Condition filter
+    if (filters.condition !== 'all' && !patient.condition.toLowerCase().includes(filters.condition.toLowerCase())) return false;
+    
+    // Age range filter
+    if (filters.ageRange === 'under30' && patient.age >= 30) return false;
+    if (filters.ageRange === '30to50' && (patient.age < 30 || patient.age > 50)) return false;
+    if (filters.ageRange === 'over50' && patient.age <= 50) return false;
+    
+    return true;
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -168,6 +194,25 @@ export default function Patients() {
     setIsOpen(false);
   };
 
+  const handleFilterChange = (filterName: string, value: any) => {
+    setFilters(prev => ({ ...prev, [filterName]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      hasAppointment: false,
+      condition: 'all',
+      ageRange: 'all'
+    });
+    toast.success('Filtres réinitialisés');
+    setIsFilterOpen(false);
+  };
+
+  const applyFilters = () => {
+    toast.success('Filtres appliqués');
+    setIsFilterOpen(false);
+  };
+
   return (
     <Layout>
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -206,10 +251,94 @@ export default function Patients() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="md:w-auto">
-            <Filter className="h-4 w-4 mr-2" />
-            <span>Filtres</span>
-          </Button>
+          <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="md:w-auto">
+                <Filter className="h-4 w-4 mr-2" />
+                <span>Filtres</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">Filtres</h3>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 px-2 text-muted-foreground"
+                    onClick={clearFilters}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Réinitialiser
+                  </Button>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="appointment" 
+                      checked={filters.hasAppointment} 
+                      onCheckedChange={(checked) => 
+                        handleFilterChange('hasAppointment', checked)
+                      } 
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label htmlFor="appointment">Avec rendez-vous planifié</Label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Condition</Label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {['all', 'Lombalgie', 'Entorse', 'Tendinite', 'Arthrite'].map((condition) => (
+                      <div key={condition} className="flex items-center space-x-2">
+                        <input 
+                          type="radio" 
+                          id={`condition-${condition}`} 
+                          name="condition"
+                          checked={filters.condition === condition}
+                          onChange={() => handleFilterChange('condition', condition)}
+                          className="h-4 w-4" 
+                        />
+                        <Label htmlFor={`condition-${condition}`}>
+                          {condition === 'all' ? 'Toutes les conditions' : condition}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Âge</Label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { value: 'all', label: 'Tous les âges' },
+                      { value: 'under30', label: 'Moins de 30 ans' },
+                      { value: '30to50', label: '30 à 50 ans' },
+                      { value: 'over50', label: 'Plus de 50 ans' }
+                    ].map((range) => (
+                      <div key={range.value} className="flex items-center space-x-2">
+                        <input 
+                          type="radio" 
+                          id={`age-${range.value}`} 
+                          name="ageRange"
+                          checked={filters.ageRange === range.value}
+                          onChange={() => handleFilterChange('ageRange', range.value)}
+                          className="h-4 w-4" 
+                        />
+                        <Label htmlFor={`age-${range.value}`}>{range.label}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <Button className="w-full" onClick={applyFilters}>
+                  Appliquer les filtres
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         
         <Tabs defaultValue="all" className="w-full">
