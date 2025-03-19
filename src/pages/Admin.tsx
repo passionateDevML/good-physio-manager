@@ -19,8 +19,10 @@ export default function Admin() {
     { id: '3', name: 'Dr. Julie Robert', email: 'julie.robert@goodphysio.com', specialization: 'Kinésithérapie', status: 'inactive' },
   ]);
   
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newTherapist, setNewTherapist] = useState({
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentTherapist, setCurrentTherapist] = useState({
+    id: '',
     name: '',
     email: '',
     specialization: '',
@@ -28,23 +30,68 @@ export default function Admin() {
   });
   
   const handleAddTherapist = () => {
-    const id = (therapists.length + 1).toString();
-    const therapist: Therapist = {
-      id,
-      name: newTherapist.name,
-      email: newTherapist.email,
-      specialization: newTherapist.specialization,
-      status: 'active',
-    };
-    
-    setTherapists([...therapists, therapist]);
-    setNewTherapist({ name: '', email: '', specialization: '', password: '' });
-    setIsAddDialogOpen(false);
-    
-    toast({
-      title: "Thérapeute ajouté",
-      description: `${therapist.name} a été ajouté avec succès`,
+    setIsEditing(false);
+    setCurrentTherapist({
+      id: '',
+      name: '',
+      email: '',
+      specialization: '',
+      password: '',
     });
+    setIsDialogOpen(true);
+  };
+  
+  const handleEditTherapist = (therapist: Therapist) => {
+    setIsEditing(true);
+    setCurrentTherapist({
+      id: therapist.id,
+      name: therapist.name,
+      email: therapist.email,
+      specialization: therapist.specialization,
+      password: '', // We don't want to show the password
+    });
+    setIsDialogOpen(true);
+  };
+  
+  const handleSaveTherapist = () => {
+    if (isEditing) {
+      // Update existing therapist
+      const updatedTherapists = therapists.map(therapist => {
+        if (therapist.id === currentTherapist.id) {
+          return {
+            ...therapist,
+            name: currentTherapist.name,
+            specialization: currentTherapist.specialization,
+          };
+        }
+        return therapist;
+      });
+      
+      setTherapists(updatedTherapists);
+      toast({
+        title: "Thérapeute modifié",
+        description: `${currentTherapist.name} a été modifié avec succès`,
+      });
+    } else {
+      // Add new therapist
+      const id = (therapists.length + 1).toString();
+      const newTherapist: Therapist = {
+        id,
+        name: currentTherapist.name,
+        email: currentTherapist.email,
+        specialization: currentTherapist.specialization,
+        status: 'active',
+      };
+      
+      setTherapists([...therapists, newTherapist]);
+      toast({
+        title: "Thérapeute ajouté",
+        description: `${newTherapist.name} a été ajouté avec succès`,
+      });
+    }
+    
+    setCurrentTherapist({ id: '', name: '', email: '', specialization: '', password: '' });
+    setIsDialogOpen(false);
   };
   
   const handleDeleteTherapist = (id: string) => {
@@ -78,7 +125,7 @@ export default function Admin() {
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewTherapist(prev => ({ ...prev, [name]: value }));
+    setCurrentTherapist(prev => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -91,29 +138,30 @@ export default function Admin() {
               Gérez les comptes thérapeutes et leurs permissions
             </p>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-physio-500 hover:bg-physio-600">
-                <Plus className="mr-2 h-4 w-4" />
-                Ajouter un thérapeute
-              </Button>
-            </DialogTrigger>
-            <TherapistForm 
-              newTherapist={newTherapist}
-              handleInputChange={handleInputChange}
-              handleAddTherapist={handleAddTherapist}
-              onCancel={() => setIsAddDialogOpen(false)}
-            />
-          </Dialog>
+          <Button className="bg-physio-500 hover:bg-physio-600" onClick={handleAddTherapist}>
+            <Plus className="mr-2 h-4 w-4" />
+            Ajouter un thérapeute
+          </Button>
         </div>
 
         <TherapistList 
           therapists={therapists}
           onToggleStatus={handleToggleStatus}
           onDelete={handleDeleteTherapist}
+          onEdit={handleEditTherapist}
         />
 
         <SecuritySettings />
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <TherapistForm 
+            therapist={currentTherapist}
+            isEditing={isEditing}
+            handleInputChange={handleInputChange}
+            handleSaveTherapist={handleSaveTherapist}
+            onCancel={() => setIsDialogOpen(false)}
+          />
+        </Dialog>
       </div>
     </Layout>
   );

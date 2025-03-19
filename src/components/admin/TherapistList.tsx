@@ -17,12 +17,14 @@ interface TherapistListProps {
   therapists: Therapist[];
   onToggleStatus: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (therapist: Therapist) => void;
 }
 
 export const TherapistList = ({ 
   therapists, 
   onToggleStatus, 
-  onDelete 
+  onDelete,
+  onEdit
 }: TherapistListProps) => {
   return (
     <Card>
@@ -74,6 +76,7 @@ export const TherapistList = ({
                       variant="outline" 
                       size="icon"
                       className="h-8 w-8 text-amber-600 hover:text-amber-700"
+                      onClick={() => onEdit(therapist)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>

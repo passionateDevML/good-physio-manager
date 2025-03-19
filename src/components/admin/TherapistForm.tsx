@@ -4,31 +4,37 @@ import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTit
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Therapist } from './TherapistList';
 
 interface TherapistFormProps {
-  newTherapist: {
+  therapist: {
+    id?: string;
     name: string;
     email: string;
     specialization: string;
     password: string;
   };
+  isEditing: boolean;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleAddTherapist: () => void;
+  handleSaveTherapist: () => void;
   onCancel: () => void;
 }
 
 export const TherapistForm = ({ 
-  newTherapist, 
+  therapist, 
+  isEditing,
   handleInputChange, 
-  handleAddTherapist, 
+  handleSaveTherapist, 
   onCancel 
 }: TherapistFormProps) => {
   return (
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>Ajouter un thérapeute</DialogTitle>
+        <DialogTitle>{isEditing ? 'Modifier un thérapeute' : 'Ajouter un thérapeute'}</DialogTitle>
         <DialogDescription>
-          Créez un nouveau compte thérapeute. Le thérapeute recevra un email avec ses identifiants.
+          {isEditing 
+            ? 'Modifiez les informations du thérapeute.' 
+            : 'Créez un nouveau compte thérapeute. Le thérapeute recevra un email avec ses identifiants.'}
         </DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 py-4">
@@ -39,7 +45,7 @@ export const TherapistForm = ({
           <Input
             id="name"
             name="name"
-            value={newTherapist.name}
+            value={therapist.name}
             onChange={handleInputChange}
             className="col-span-3"
           />
@@ -52,9 +58,10 @@ export const TherapistForm = ({
             id="email"
             name="email"
             type="email"
-            value={newTherapist.email}
+            value={therapist.email}
             onChange={handleInputChange}
             className="col-span-3"
+            disabled={isEditing}
           />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
@@ -64,24 +71,26 @@ export const TherapistForm = ({
           <Input
             id="specialization"
             name="specialization"
-            value={newTherapist.specialization}
+            value={therapist.specialization}
             onChange={handleInputChange}
             className="col-span-3"
           />
         </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="password" className="text-right">
-            Mot de passe
-          </Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            value={newTherapist.password}
-            onChange={handleInputChange}
-            className="col-span-3"
-          />
-        </div>
+        {!isEditing && (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="password" className="text-right">
+              Mot de passe
+            </Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              value={therapist.password}
+              onChange={handleInputChange}
+              className="col-span-3"
+            />
+          </div>
+        )}
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onCancel}>
@@ -89,10 +98,10 @@ export const TherapistForm = ({
         </Button>
         <Button 
           className="bg-physio-500 hover:bg-physio-600"
-          onClick={handleAddTherapist}
-          disabled={!newTherapist.name || !newTherapist.email || !newTherapist.password}
+          onClick={handleSaveTherapist}
+          disabled={!therapist.name || (!isEditing && !therapist.password) || !therapist.email}
         >
-          Ajouter
+          {isEditing ? 'Enregistrer' : 'Ajouter'}
         </Button>
       </DialogFooter>
     </DialogContent>
