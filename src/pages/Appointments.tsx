@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -32,6 +33,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { AppointmentForm } from '@/components/appointment/AppointmentForm';
+import { toast } from 'sonner';
 
 // Mock data
 const appointments = [
@@ -150,6 +153,8 @@ function AppointmentItem({ appointment }: AppointmentItemProps) {
 
 export default function Appointments() {
   const [date, setDate] = useState<Date>(new Date());
+  const [appointmentsList, setAppointmentsList] = useState(appointments);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Format today's date
   const formattedDate = format(date, 'dd MMMM yyyy', { locale: fr });
@@ -170,6 +175,27 @@ export default function Appointments() {
     setDate(newDate);
   };
 
+  const handleSaveAppointment = (appointmentData: any) => {
+    // Find patient name from ID
+    const patientName = appointmentData.patientId === '1' ? 'Sophie Martin' : 
+                         appointmentData.patientId === '2' ? 'Thomas Dubois' : 
+                         appointmentData.patientId === '3' ? 'Emma Petit' : 
+                         'Patient';
+
+    const newAppointment = {
+      id: (appointmentsList.length + 1).toString(),
+      patient: { name: patientName, avatarUrl: '' },
+      time: appointmentData.time,
+      type: appointmentData.type,
+      status: 'scheduled',
+      notes: appointmentData.notes
+    };
+    
+    setAppointmentsList([...appointmentsList, newAppointment]);
+    setIsDialogOpen(false);
+    toast.success('Rendez-vous créé avec succès');
+  };
+
   return (
     <Layout>
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -177,10 +203,18 @@ export default function Appointments() {
           <h1 className="text-2xl font-bold">Rendez-vous</h1>
           <p className="text-muted-foreground">Gérez votre agenda et vos rendez-vous</p>
         </div>
-        <Button className="bg-physio-500 hover:bg-physio-600 flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          <span>Nouveau rendez-vous</span>
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-physio-500 hover:bg-physio-600 flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              <span>Nouveau rendez-vous</span>
+            </Button>
+          </DialogTrigger>
+          <AppointmentForm 
+            onSave={handleSaveAppointment}
+            onCancel={() => setIsDialogOpen(false)}
+          />
+        </Dialog>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -255,7 +289,7 @@ export default function Appointments() {
               
               <TabsContent value="list" className="mt-0 p-0">
                 <div className="p-4 space-y-3">
-                  {appointments.map((appointment) => (
+                  {appointmentsList.map((appointment) => (
                     <AppointmentItem key={appointment.id} appointment={appointment} />
                   ))}
                 </div>

@@ -1,14 +1,19 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { AppointmentCard } from '@/components/dashboard/AppointmentCard';
 import { PatientSummary } from '@/components/dashboard/PatientSummary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { LineChart, BarChart } from 'recharts';
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar } from 'recharts';
 import { CalendarClock, ChevronRight, Plus, UserPlus } from 'lucide-react';
+import { PatientForm } from '@/components/patient/PatientForm';
+import { AppointmentForm } from '@/components/appointment/AppointmentForm';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 // Mock data
 const appointmentsData = [
@@ -97,6 +102,34 @@ const evaluationData = [
 ];
 
 export default function Dashboard() {
+  const [isPatientDialogOpen, setIsPatientDialogOpen] = useState(false);
+  const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
+  const [currentPatient, setCurrentPatient] = useState({
+    name: '',
+    age: '',
+    phone: '',
+    email: '',
+    condition: '',
+  });
+  const navigate = useNavigate();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCurrentPatient(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSavePatient = () => {
+    toast.success('Patient ajouté avec succès');
+    setIsPatientDialogOpen(false);
+    // In a real app, we would add the patient to the state/database
+  };
+
+  const handleSaveAppointment = (appointmentData: any) => {
+    toast.success('Rendez-vous créé avec succès');
+    setIsAppointmentDialogOpen(false);
+    // In a real app, we would add the appointment to the state/database
+  };
+
   return (
     <Layout>
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -105,14 +138,34 @@ export default function Dashboard() {
           <p className="text-muted-foreground">Bienvenue sur votre espace Good Physio</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
-            <span>Nouveau patient</span>
-          </Button>
-          <Button className="bg-physio-500 hover:bg-physio-600 flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            <span>Nouveau rendez-vous</span>
-          </Button>
+          <Dialog open={isPatientDialogOpen} onOpenChange={setIsPatientDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                <span>Nouveau patient</span>
+              </Button>
+            </DialogTrigger>
+            <PatientForm 
+              patient={currentPatient}
+              isEditing={false}
+              handleInputChange={handleInputChange}
+              handleSavePatient={handleSavePatient}
+              onCancel={() => setIsPatientDialogOpen(false)}
+            />
+          </Dialog>
+          
+          <Dialog open={isAppointmentDialogOpen} onOpenChange={setIsAppointmentDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-physio-500 hover:bg-physio-600 flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                <span>Nouveau rendez-vous</span>
+              </Button>
+            </DialogTrigger>
+            <AppointmentForm 
+              onSave={handleSaveAppointment}
+              onCancel={() => setIsAppointmentDialogOpen(false)}
+            />
+          </Dialog>
         </div>
       </div>
       
@@ -164,7 +217,12 @@ export default function Dashboard() {
                 <CardTitle>Rendez-vous du jour</CardTitle>
                 <CardDescription>Vous avez 4 rendez-vous aujourd'hui</CardDescription>
               </div>
-              <Button variant="outline" size="sm" className="text-physio-500 hover:text-physio-600 hover:bg-physio-50 group">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-physio-500 hover:text-physio-600 hover:bg-physio-50 group"
+                onClick={() => navigate('/appointments')}
+              >
                 <CalendarClock className="h-4 w-4 mr-1 group-hover:mr-2 transition-all" />
                 <span>Voir l'agenda</span>
               </Button>
@@ -202,7 +260,12 @@ export default function Dashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Patients à suivre</h2>
-              <Button variant="ghost" size="sm" className="text-muted-foreground">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-muted-foreground"
+                onClick={() => navigate('/patients')}
+              >
                 <span>Voir tous</span>
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>

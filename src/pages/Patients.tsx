@@ -5,7 +5,10 @@ import { PatientCard } from '@/components/patient/PatientCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { UserPlus, Search, Filter } from 'lucide-react';
+import { PatientForm } from '@/components/patient/PatientForm';
+import { toast } from 'sonner';
 
 // Mock data
 const patientsData = [
@@ -106,12 +109,64 @@ const patientsData = [
 
 export default function Patients() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [patients, setPatients] = useState(patientsData);
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentPatient, setCurrentPatient] = useState({
+    name: '',
+    age: '',
+    phone: '',
+    email: '',
+    condition: '',
+  });
+  const [isEditing, setIsEditing] = useState(false);
   
-  const filteredPatients = patientsData.filter(patient => 
+  const filteredPatients = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.condition.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCurrentPatient(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddPatient = () => {
+    setIsEditing(false);
+    setCurrentPatient({
+      name: '',
+      age: '',
+      phone: '',
+      email: '',
+      condition: '',
+    });
+    setIsOpen(true);
+  };
+
+  const handleSavePatient = () => {
+    if (isEditing) {
+      // Update existing patient logic would go here
+      toast.success('Patient mis à jour avec succès');
+    } else {
+      // Add new patient
+      const newPatient = {
+        id: (patients.length + 1).toString(),
+        name: currentPatient.name,
+        age: parseInt(currentPatient.age) || 0,
+        phone: currentPatient.phone,
+        email: currentPatient.email,
+        lastVisit: new Date().toLocaleDateString('fr-FR'),
+        condition: currentPatient.condition,
+        progress: 0,
+        avatarUrl: '',
+      };
+      
+      setPatients([...patients, newPatient]);
+      toast.success('Patient ajouté avec succès');
+    }
+    
+    setIsOpen(false);
+  };
 
   return (
     <Layout>
@@ -120,10 +175,24 @@ export default function Patients() {
           <h1 className="text-2xl font-bold">Patients</h1>
           <p className="text-muted-foreground">Gérez les dossiers patients</p>
         </div>
-        <Button className="bg-physio-500 hover:bg-physio-600 flex items-center gap-2">
-          <UserPlus className="h-4 w-4" />
-          <span>Nouveau patient</span>
-        </Button>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              className="bg-physio-500 hover:bg-physio-600 flex items-center gap-2"
+              onClick={handleAddPatient}
+            >
+              <UserPlus className="h-4 w-4" />
+              <span>Nouveau patient</span>
+            </Button>
+          </DialogTrigger>
+          <PatientForm 
+            patient={currentPatient}
+            isEditing={isEditing}
+            handleInputChange={handleInputChange}
+            handleSavePatient={handleSavePatient}
+            onCancel={() => setIsOpen(false)}
+          />
+        </Dialog>
       </div>
       
       <div className="bg-white rounded-xl border border-border/50 overflow-hidden mb-8 shadow-soft">
