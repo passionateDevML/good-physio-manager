@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,8 +15,8 @@ import {
   Users, 
   FileDown,
   Calendar,
-  FileCsv,
-  FilePdf
+  FileOutput,
+  FileSpreadsheet
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -53,8 +52,7 @@ export default function Reports() {
     includeCharts: true,
     dateRange: "month"
   });
-  
-  // Sample data for charts
+
   const monthlyAppointments = [
     { name: 'Jan', count: 35 },
     { name: 'Fév', count: 42 },
@@ -83,7 +81,6 @@ export default function Reports() {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-  // Mock patients data for the patients tab
   const patients = [
     { id: '1', name: 'Sophie Martin', sessions: 12, lastVisit: '15/05/2023', condition: 'Lombalgie' },
     { id: '2', name: 'Thomas Dubois', sessions: 8, lastVisit: '18/05/2023', condition: 'Entorse' },
@@ -92,7 +89,6 @@ export default function Reports() {
     { id: '5', name: 'Julie Moreau', sessions: 10, lastVisit: '03/05/2023', condition: 'Tendinite' },
   ];
 
-  // Filter patients based on search term
   const filteredPatients = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.condition.toLowerCase().includes(searchTerm.toLowerCase())
@@ -103,7 +99,6 @@ export default function Reports() {
   };
 
   const handleExportData = () => {
-    // In a real implementation, this would generate and download the file
     setIsExportDialogOpen(false);
     toast.success(
       `Rapport exporté en format ${exportOptions.format.toUpperCase()}`,
@@ -154,7 +149,7 @@ export default function Reports() {
                 description: `Le rapport complet a été exporté au format CSV.`
               });
             }}>
-              <FileCsv className="mr-2 h-4 w-4" />
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
               Télécharger en CSV
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
@@ -162,7 +157,7 @@ export default function Reports() {
                 description: `Le rapport complet a été exporté au format PDF.`
               });
             }}>
-              <FilePdf className="mr-2 h-4 w-4" />
+              <FileOutput className="mr-2 h-4 w-4" />
               Télécharger en PDF
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -524,7 +519,6 @@ export default function Reports() {
         </TabsContent>
       </Tabs>
 
-      {/* Export Data Dialog */}
       <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
