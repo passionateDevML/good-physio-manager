@@ -13,7 +13,11 @@ import {
   FileText, 
   PieChart, 
   Search,
-  Users 
+  Users, 
+  FileDown,
+  Calendar,
+  FileCsv,
+  FilePdf
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -31,9 +35,24 @@ import {
   Line
 } from 'recharts';
 import { initialAppointments } from '@/components/appointment/AppointmentTypes';
+import { toast } from 'sonner';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export default function Reports() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [exportOptions, setExportOptions] = useState({
+    format: "csv",
+    includeCharts: true,
+    dateRange: "month"
+  });
   
   // Sample data for charts
   const monthlyAppointments = [
@@ -79,6 +98,36 @@ export default function Reports() {
     patient.condition.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
+  const handleExportData = () => {
+    // In a real implementation, this would generate and download the file
+    setIsExportDialogOpen(false);
+    toast.success(
+      `Rapport exporté en format ${exportOptions.format.toUpperCase()}`,
+      {
+        description: `Les données du rapport "${getActiveTabName()}" ont été exportées.`,
+        duration: 5000,
+      }
+    );
+  };
+
+  const getActiveTabName = () => {
+    switch(activeTab) {
+      case 'overview': return 'Vue d\'ensemble';
+      case 'patients': return 'Patients';
+      case 'appointments': return 'Rendez-vous';
+      case 'performance': return 'Performance';
+      default: return 'Rapport';
+    }
+  };
+
+  const formatCurrentDate = () => {
+    return format(new Date(), 'dd MMMM yyyy', { locale: fr });
+  };
+
   return (
     <Layout>
       <div className="flex items-center justify-between mb-6">
@@ -88,13 +137,39 @@ export default function Reports() {
             Consultez les rapports et analyses de performance de la clinique
           </p>
         </div>
-        <Button variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Exporter les données
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              Exporter les données
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Exporter avec options
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              toast.success('Rapport CSV téléchargé', {
+                description: `Le rapport complet a été exporté au format CSV.`
+              });
+            }}>
+              <FileCsv className="mr-2 h-4 w-4" />
+              Télécharger en CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              toast.success('Rapport PDF téléchargé', {
+                description: `Le rapport complet a été exporté au format PDF.`
+              });
+            }}>
+              <FilePdf className="mr-2 h-4 w-4" />
+              Télécharger en PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-4" onValueChange={handleTabChange}>
         <TabsList>
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="patients">Patients</TabsTrigger>
@@ -448,6 +523,84 @@ export default function Reports() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Export Data Dialog */}
+      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Exporter les données du rapport</DialogTitle>
+            <DialogDescription>
+              Personnalisez votre export pour le rapport "{getActiveTabName()}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="format" className="text-right">
+                Format
+              </Label>
+              <Select
+                value={exportOptions.format}
+                onValueChange={(value) => setExportOptions({...exportOptions, format: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Sélectionner un format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="csv">CSV</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="excel">Excel</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="range" className="text-right">
+                Période
+              </Label>
+              <Select
+                value={exportOptions.dateRange}
+                onValueChange={(value) => setExportOptions({...exportOptions, dateRange: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Sélectionner une période" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="week">Cette semaine</SelectItem>
+                  <SelectItem value="month">Ce mois</SelectItem>
+                  <SelectItem value="quarter">Ce trimestre</SelectItem>
+                  <SelectItem value="year">Cette année</SelectItem>
+                  <SelectItem value="all">Toutes les données</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <div className="col-span-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="includeCharts" 
+                    checked={exportOptions.includeCharts}
+                    onCheckedChange={(checked) => 
+                      setExportOptions({...exportOptions, includeCharts: checked as boolean})
+                    }
+                  />
+                  <Label htmlFor="includeCharts">Inclure les graphiques</Label>
+                </div>
+              </div>
+            </div>
+            <div className="col-span-4 text-sm text-muted-foreground">
+              <p>Rapport généré à la date du {formatCurrentDate()}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsExportDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleExportData} className="bg-physio-500 hover:bg-physio-600">
+              <Download className="mr-2 h-4 w-4" />
+              Exporter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

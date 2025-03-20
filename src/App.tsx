@@ -12,6 +12,7 @@ import Appointments from "./pages/Appointments";
 import Evaluations from "./pages/Evaluations";
 import MedicalRecords from "./pages/MedicalRecords";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -81,7 +82,7 @@ const App = () => (
             path="/settings" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Settings />
               </ProtectedRoute>
             } 
           />
