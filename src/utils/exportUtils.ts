@@ -15,7 +15,7 @@ export const handleExportData = (options: ExportOptions): Promise<void> => {
     // Simulate export process
     console.log("Exporting data with options:", options);
     
-    // Add a small timeout to prevent UI freeze
+    // Add a small timeout to simulate processing
     setTimeout(() => {
       // Show success toast
       toast.success(

@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Bell, Search, UserCircle, LogOut, Settings } from 'lucide-react';
+import { Bell, Search, UserCircle, LogOut, Settings, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,12 +18,57 @@ interface HeaderProps {
   className?: string;
 }
 
+interface Notification {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  read: boolean;
+}
+
 export function Header({ className }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const user = getCurrentUser();
   const authenticated = isAuthenticated();
   const admin = isAdmin();
+  
+  // Mock notifications
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      title: 'Nouveau rendez-vous',
+      description: 'Sophie Martin a pris rendez-vous pour le 15 juillet',
+      time: '1h',
+      read: false
+    },
+    {
+      id: '2',
+      title: 'Rappel de rendez-vous',
+      description: 'Rendez-vous avec Thomas Dubois demain à 14h',
+      time: '3h',
+      read: false
+    },
+    {
+      id: '3',
+      title: 'Annulation de rendez-vous',
+      description: 'Emma Petit a annulé son rendez-vous du 20 juillet',
+      time: '5h',
+      read: true
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAsRead = (id: string) => {
+    setNotifications(notifications.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    ));
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  };
 
   return (
     <header className={cn('w-full px-6 py-3 bg-white/80 backdrop-blur-md border-b border-border/50 sticky top-0 z-10 flex items-center justify-between', className)}>
@@ -52,10 +97,73 @@ export function Header({ className }: HeaderProps) {
       <div className="flex items-center gap-2">
         {authenticated ? (
           <>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-physio-500 rounded-full"></span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-physio-500 rounded-full"></span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 animate-zoom-in">
+                <div className="flex items-center justify-between p-2">
+                  <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                  {unreadCount > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-xs" 
+                      onClick={markAllAsRead}
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      Tout marquer comme lu
+                    </Button>
+                  )}
+                </div>
+                <DropdownMenuSeparator />
+                {notifications.length === 0 ? (
+                  <div className="py-6 text-center text-muted-foreground">
+                    <p>Aucune notification</p>
+                  </div>
+                ) : (
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {notifications.map((notification) => (
+                      <div 
+                        key={notification.id} 
+                        className={cn(
+                          "px-3 py-2 hover:bg-muted transition-colors flex items-start gap-2", 
+                          !notification.read ? "bg-muted/50" : ""
+                        )}
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{notification.title}</p>
+                          <p className="text-xs text-muted-foreground">{notification.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">Il y a {notification.time}</p>
+                        </div>
+                        {!notification.read && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6" 
+                            onClick={() => markAsRead(notification.id)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="justify-center text-center text-xs text-muted-foreground"
+                  onClick={() => navigate('/settings')}
+                >
+                  Gérer les notifications
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -60,7 +60,7 @@ export function ExportDialog({ open, onOpenChange, sections, defaultSection }: E
               Section
             </Label>
             <div className="col-span-3">
-              <Select value={section} onValueChange={setSection}>
+              <Select value={section} onValueChange={(value) => setSection(value)}>
                 <SelectTrigger id="section">
                   <SelectValue placeholder="Sélectionner une section" />
                 </SelectTrigger>
@@ -80,7 +80,7 @@ export function ExportDialog({ open, onOpenChange, sections, defaultSection }: E
               Format
             </Label>
             <div className="col-span-3">
-              <Select value={format} onValueChange={(value) => setFormat(value as ExportFormat)}>
+              <Select value={format} onValueChange={(value: ExportFormat) => setFormat(value)}>
                 <SelectTrigger id="format">
                   <SelectValue placeholder="Sélectionner un format" />
                 </SelectTrigger>
