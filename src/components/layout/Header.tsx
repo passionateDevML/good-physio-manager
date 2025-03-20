@@ -69,7 +69,7 @@ export function Header({ className }: HeaderProps) {
               <DropdownMenuContent align="end" className="w-56 animate-zoom-in">
                 <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
                   <UserCircle className="mr-2 h-4 w-4" />
                   <span>Profil</span>
                 </DropdownMenuItem>
