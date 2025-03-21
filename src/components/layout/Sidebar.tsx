@@ -13,7 +13,8 @@ import {
   Home,
   LineChart,
   Settings,
-  Users
+  Users,
+  Dumbbell
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -57,6 +58,7 @@ const navItems = [
   { icon: Calendar, label: 'Rendez-vous', to: '/appointments' },
   { icon: ClipboardList, label: 'Évaluations', to: '/evaluations' },
   { icon: FileText, label: 'Dossiers', to: '/records' },
+  { icon: Dumbbell, label: 'Exercices', to: '/exercises' },
   { icon: LineChart, label: 'Rapports', to: '/reports' },
 ];
 

@@ -1,5 +1,5 @@
 
-import { Shield, User, BellRing, PaintBucket } from 'lucide-react';
+import { Shield, User, BellRing, PaintBucket, Dumbbell } from 'lucide-react';
 
 export interface TabItem {
   id: string;
@@ -27,5 +27,10 @@ export const settingsTabs: TabItem[] = [
     id: 'security',
     label: 'Sécurité',
     icon: <Shield className="h-4 w-4" />
+  },
+  {
+    id: 'exercises',
+    label: 'Exercices',
+    icon: <Dumbbell className="h-4 w-4" />
   }
 ];

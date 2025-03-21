@@ -11,6 +11,7 @@ import Patients from "./pages/Patients";
 import Appointments from "./pages/Appointments";
 import Evaluations from "./pages/Evaluations";
 import MedicalRecords from "./pages/MedicalRecords";
+import ExerciseLibrary from "./pages/ExerciseLibrary";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
@@ -67,6 +68,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <MedicalRecords />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/exercises" 
+            element={
+              <ProtectedRoute>
+                <ExerciseLibrary />
               </ProtectedRoute>
             } 
           />
