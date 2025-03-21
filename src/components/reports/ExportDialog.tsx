@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,11 +13,13 @@ import { exportToPdf, exportToCsv, exportToExcel } from '@/utils/exportUtils';
 type ExportFormat = 'pdf' | 'csv' | 'excel';
 
 interface ExportDialogProps {
-  onClose: () => void;
-  data: any;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  sections: { value: string; label: string; }[];
+  defaultSection: string;
 }
 
-export function ExportDialog({ onClose, data }: ExportDialogProps) {
+export function ExportDialog({ open, onOpenChange, sections, defaultSection }: ExportDialogProps) {
   const [exportTab, setExportTab] = useState<string>('simple');
   const [exportFormat, setExportFormat] = useState<ExportFormat>('pdf');
   const [filename, setFilename] = useState('rapport-' + new Date().toISOString().split('T')[0]);
@@ -26,6 +28,7 @@ export function ExportDialog({ onClose, data }: ExportDialogProps) {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([
     'name', 'date', 'status', 'type', 'value'
   ]);
+  const [selectedSection, setSelectedSection] = useState(defaultSection);
 
   const handleColumnToggle = (column: string) => {
     if (selectedColumns.includes(column)) {
@@ -42,7 +45,7 @@ export function ExportDialog({ onClose, data }: ExportDialogProps) {
         includeCharts,
         includeStats,
         selectedColumns,
-        data
+        data: [] // Mock data for demo purposes
       };
 
       if (exportFormat === 'pdf') {
@@ -54,7 +57,7 @@ export function ExportDialog({ onClose, data }: ExportDialogProps) {
       }
 
       toast.success(`Export en ${exportFormat.toUpperCase()} réussi`);
-      onClose();
+      onOpenChange(false);
     } catch (error) {
       console.error('Export error:', error);
       toast.error("Une erreur s'est produite lors de l'export");
@@ -62,106 +65,129 @@ export function ExportDialog({ onClose, data }: ExportDialogProps) {
   };
 
   return (
-    <DialogContent className="sm:max-w-[500px]">
-      <DialogHeader>
-        <DialogTitle>Exporter le rapport</DialogTitle>
-        <DialogDescription>
-          Configurez les options d'exportation pour votre rapport
-        </DialogDescription>
-      </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Exporter le rapport</DialogTitle>
+          <DialogDescription>
+            Configurez les options d'exportation pour votre rapport
+          </DialogDescription>
+        </DialogHeader>
 
-      <Tabs defaultValue="simple" onValueChange={setExportTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="simple">Export simple</TabsTrigger>
-          <TabsTrigger value="advanced">Options avancées</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="simple" className="space-y-4">
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="format" className="text-right">
-                Format
-              </Label>
-              <Select 
-                value={exportFormat} 
-                onValueChange={(value: string) => setExportFormat(value as ExportFormat)}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Choisir un format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pdf">PDF</SelectItem>
-                  <SelectItem value="csv">CSV</SelectItem>
-                  <SelectItem value="excel">Excel</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <Tabs defaultValue="simple" onValueChange={setExportTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="simple">Export simple</TabsTrigger>
+            <TabsTrigger value="advanced">Options avancées</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="simple" className="space-y-4">
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="section" className="text-right">
+                  Section
+                </Label>
+                <Select 
+                  value={selectedSection} 
+                  onValueChange={setSelectedSection}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Choisir une section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sections.map((section) => (
+                      <SelectItem key={section.value} value={section.value}>
+                        {section.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="filename" className="text-right">
-                Nom du fichier
-              </Label>
-              <Input
-                id="filename"
-                value={filename}
-                onChange={(e) => setFilename(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="advanced" className="space-y-4">
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right pt-2">Inclure</Label>
-              <div className="col-span-3 space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="charts" 
-                    checked={includeCharts}
-                    onCheckedChange={() => setIncludeCharts(!includeCharts)}
-                  />
-                  <Label htmlFor="charts">Graphiques</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="stats" 
-                    checked={includeStats}
-                    onCheckedChange={() => setIncludeStats(!includeStats)}
-                  />
-                  <Label htmlFor="stats">Statistiques</Label>
-                </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="format" className="text-right">
+                  Format
+                </Label>
+                <Select 
+                  value={exportFormat} 
+                  onValueChange={(value: string) => setExportFormat(value as ExportFormat)}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Choisir un format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pdf">PDF</SelectItem>
+                    <SelectItem value="csv">CSV</SelectItem>
+                    <SelectItem value="excel">Excel</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="filename" className="text-right">
+                  Nom du fichier
+                </Label>
+                <Input
+                  id="filename"
+                  value={filename}
+                  onChange={(e) => setFilename(e.target.value)}
+                  className="col-span-3"
+                />
               </div>
             </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right pt-2">Colonnes</Label>
-              <div className="col-span-3 grid grid-cols-2 gap-2">
-                {['name', 'date', 'status', 'type', 'value', 'category', 'details'].map((column) => (
-                  <div key={column} className="flex items-center space-x-2">
+          </TabsContent>
+          
+          <TabsContent value="advanced" className="space-y-4">
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label className="text-right pt-2">Inclure</Label>
+                <div className="col-span-3 space-y-2">
+                  <div className="flex items-center space-x-2">
                     <Checkbox 
-                      id={`col-${column}`}
-                      checked={selectedColumns.includes(column)}
-                      onCheckedChange={() => handleColumnToggle(column)}
+                      id="charts" 
+                      checked={includeCharts}
+                      onCheckedChange={() => setIncludeCharts(!includeCharts)}
                     />
-                    <Label htmlFor={`col-${column}`} className="capitalize">{column}</Label>
+                    <Label htmlFor="charts">Graphiques</Label>
                   </div>
-                ))}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="stats" 
+                      checked={includeStats}
+                      onCheckedChange={() => setIncludeStats(!includeStats)}
+                    />
+                    <Label htmlFor="stats">Statistiques</Label>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label className="text-right pt-2">Colonnes</Label>
+                <div className="col-span-3 grid grid-cols-2 gap-2">
+                  {['name', 'date', 'status', 'type', 'value', 'category', 'details'].map((column) => (
+                    <div key={column} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`col-${column}`}
+                        checked={selectedColumns.includes(column)}
+                        onCheckedChange={() => handleColumnToggle(column)}
+                      />
+                      <Label htmlFor={`col-${column}`} className="capitalize">{column}</Label>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+        </Tabs>
 
-      <DialogFooter>
-        <Button variant="outline" onClick={onClose}>
-          Annuler
-        </Button>
-        <Button className="bg-physio-500 hover:bg-physio-600" onClick={handleExport}>
-          Exporter
-        </Button>
-      </DialogFooter>
-    </DialogContent>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Annuler
+          </Button>
+          <Button className="bg-physio-500 hover:bg-physio-600" onClick={handleExport}>
+            Exporter
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
