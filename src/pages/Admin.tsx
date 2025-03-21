@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -94,16 +93,6 @@ export default function Admin() {
     setIsDialogOpen(false);
   };
   
-  const handleDeleteTherapist = (id: string) => {
-    const updatedTherapists = therapists.filter(therapist => therapist.id !== id);
-    setTherapists(updatedTherapists);
-    
-    toast({
-      title: "Thérapeute supprimé",
-      description: "Le thérapeute a été supprimé avec succès",
-    });
-  };
-  
   const handleToggleStatus = (id: string) => {
     const updatedTherapists = therapists.map(therapist => {
       if (therapist.id === id) {
@@ -120,6 +109,16 @@ export default function Admin() {
     toast({
       title: "Statut modifié",
       description: "Le statut du thérapeute a été mis à jour",
+    });
+  };
+  
+  const handleDeleteTherapist = (id: string) => {
+    const updatedTherapists = therapists.filter(therapist => therapist.id !== id);
+    setTherapists(updatedTherapists);
+    
+    toast({
+      title: "Thérapeute supprimé",
+      description: "Le thérapeute a été supprimé avec succès",
     });
   };
   
