@@ -57,7 +57,10 @@ export default function Index() {
               Commencer maintenant
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button variant="outline">
+            <Button 
+              variant="outline" 
+              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+            >
               En savoir plus
             </Button>
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -10,6 +9,7 @@ import { FileText, PlusCircle, Search, Calendar, User, Activity, ClipboardList, 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { NewMedicalRecordForm } from '@/components/patient/NewMedicalRecordForm';
 
 // Define interfaces for type safety
 interface Patient {
@@ -39,7 +39,8 @@ interface TreatmentItem {
   description: string;
 }
 
-const patients: Patient[] = [
+// Initial sample data
+const initialPatients: Patient[] = [
   { 
     id: 1, 
     name: 'Jean Dupont', 
@@ -314,10 +315,16 @@ export default function MedicalRecords() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false);
+  const [isNewRecordDialogOpen, setIsNewRecordDialogOpen] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>(initialPatients);
   
   const handleViewRecord = (patient: Patient) => {
     setSelectedPatient(patient);
     setIsRecordDialogOpen(true);
+  };
+  
+  const handleAddNewRecord = (newPatient: Patient) => {
+    setPatients(prev => [newPatient, ...prev]);
   };
   
   const filteredPatients = patients.filter(patient => {
@@ -345,7 +352,10 @@ export default function MedicalRecords() {
             Consultez et gérez les dossiers médicaux des patients
           </p>
         </div>
-        <Button className="bg-physio-500 hover:bg-physio-600" onClick={() => toast.info('Cette fonctionnalité sera disponible prochainement')}>
+        <Button 
+          className="bg-physio-500 hover:bg-physio-600" 
+          onClick={() => setIsNewRecordDialogOpen(true)}
+        >
           <PlusCircle className="mr-2 h-4 w-4" />
           Nouveau dossier
         </Button>
@@ -489,6 +499,7 @@ export default function MedicalRecords() {
         ))}
       </Tabs>
       
+      {/* View Record Dialog */}
       <Dialog open={isRecordDialogOpen} onOpenChange={setIsRecordDialogOpen}>
         {selectedPatient && (
           <PatientRecord 
@@ -496,6 +507,14 @@ export default function MedicalRecords() {
             onClose={() => setIsRecordDialogOpen(false)} 
           />
         )}
+      </Dialog>
+      
+      {/* New Record Dialog */}
+      <Dialog open={isNewRecordDialogOpen} onOpenChange={setIsNewRecordDialogOpen}>
+        <NewMedicalRecordForm 
+          onClose={() => setIsNewRecordDialogOpen(false)}
+          onSave={handleAddNewRecord}
+        />
       </Dialog>
     </Layout>
   );
