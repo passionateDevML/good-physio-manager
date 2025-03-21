@@ -1,104 +1,119 @@
 
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Phone, 
-  Mail, 
-  Calendar, 
-  Activity,
-  FileText
-} from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, FileText } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface PatientCardProps {
   patient: {
     id: string;
     name: string;
-    avatarUrl?: string;
-    age: number;
-    phone: string;
-    email: string;
-    lastVisit: string;
+    age?: number;
+    phone?: string;
+    email?: string;
+    lastVisit?: string;
     nextAppointment?: string;
-    condition: string;
-    progress: number;
+    condition?: string;
+    progress?: number;
+    avatarUrl?: string;
   };
-  onClick?: () => void;
-  className?: string;
 }
 
-export function PatientCard({ patient, onClick, className }: PatientCardProps) {
+export function PatientCard({ patient }: PatientCardProps) {
+  const navigate = useNavigate();
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('');
+  };
+
+  const handleViewMedicalRecord = () => {
+    navigate(`/records?patientId=${patient.id}&name=${encodeURIComponent(patient.name)}`);
+  };
+
+  const handleViewAppointments = () => {
+    navigate(`/appointments?patientId=${patient.id}&name=${encodeURIComponent(patient.name)}`);
+  };
+
   return (
-    <div 
-      className={cn(
-        'card-premium p-5 flex flex-col gap-4 animate-zoom-in cursor-pointer',
-        className
-      )}
-      onClick={onClick}
-    >
-      <div className="flex items-center gap-4">
-        <Avatar className="h-14 w-14 border-2 border-physio-100">
-          <AvatarImage src={patient.avatarUrl} alt={patient.name} />
-          <AvatarFallback className="bg-physio-100 text-physio-700 text-lg">
-            {patient.name.split(' ').map(n => n[0]).join('')}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="flex-1">
-          <h3 className="font-semibold">{patient.name}</h3>
-          <p className="text-sm text-muted-foreground">{patient.age} ans</p>
-        </div>
-        
-        <div className="rounded-full bg-physio-50 p-1">
-          <div 
-            className="h-10 w-10 rounded-full flex items-center justify-center bg-gradient-to-br from-physio-400 to-physio-600"
-          >
-            <span className="text-xs font-semibold text-white">{patient.progress}%</span>
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <CardHeader className="pb-2">
+        <div className="flex items-center space-x-3">
+          <Avatar>
+            <AvatarFallback className="bg-gradient-to-br from-physio-100 to-physio-200 text-physio-700">
+              {getInitials(patient.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <CardTitle className="text-lg">{patient.name}</CardTitle>
+            {patient.age && <div className="text-sm text-muted-foreground">{patient.age} ans</div>}
           </div>
         </div>
-      </div>
-      
-      <div className="text-sm text-muted-foreground space-y-2">
-        <div className="flex items-center gap-2">
-          <Phone className="h-3 w-3" />
-          <span>{patient.phone}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Mail className="h-3 w-3" />
-          <span>{patient.email}</span>
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-sm">
-          <Activity className="h-4 w-4 text-physio-500" />
-          <span>{patient.condition}</span>
-        </div>
-        
-        <div className="flex items-center gap-2 text-sm">
-          <Calendar className="h-4 w-4 text-amber-500" />
-          <span>Dernier RDV: {patient.lastVisit}</span>
-        </div>
-        
-        {patient.nextAppointment && (
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4 text-emerald-500" />
-            <span>Prochain RDV: {patient.nextAppointment}</span>
+      </CardHeader>
+      <CardContent className="pb-3">
+        {patient.condition && (
+          <div className="mb-3">
+            <div className="text-sm font-medium mb-1">Condition</div>
+            <Badge variant="outline" className="bg-slate-50">
+              {patient.condition}
+            </Badge>
           </div>
         )}
-      </div>
-      
-      <div className="flex gap-2 mt-auto">
-        <Button className="flex-1" variant="outline" size="sm">
-          <FileText className="h-4 w-4 mr-1" />
-          Dossier
+        
+        {patient.progress !== undefined && (
+          <div className="mb-3">
+            <div className="flex justify-between text-sm mb-1">
+              <span>Progression</span>
+              <span>{patient.progress}%</span>
+            </div>
+            <Progress value={patient.progress} className="h-2" />
+          </div>
+        )}
+        
+        <div className="space-y-2 text-sm">
+          {patient.phone && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Téléphone:</span>
+              <span>{patient.phone}</span>
+            </div>
+          )}
+          
+          {patient.email && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Email:</span>
+              <span className="truncate max-w-[140px]">{patient.email}</span>
+            </div>
+          )}
+          
+          {patient.lastVisit && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Dernière visite:</span>
+              <span>{patient.lastVisit}</span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="grid grid-cols-2 gap-2 pt-0">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex items-center justify-center"
+          onClick={handleViewMedicalRecord}
+        >
+          <FileText className="h-4 w-4 mr-1" /> Dossier
         </Button>
-        <Button className="flex-1 bg-physio-500 hover:bg-physio-600" size="sm">
-          <Calendar className="h-4 w-4 mr-1" />
-          RDV
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex items-center justify-center"
+          onClick={handleViewAppointments}
+        >
+          <Calendar className="h-4 w-4 mr-1" /> RDV
         </Button>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

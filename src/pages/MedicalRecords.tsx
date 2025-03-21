@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -38,6 +39,15 @@ interface TreatmentItem {
   type: string;
   description: string;
 }
+
+// Sample data for existing patients without medical records
+const patientsWithoutRecords = [
+  { id: "101", name: "Claire Dubois" },
+  { id: "102", name: "Henri Leclerc" },
+  { id: "103", name: "Lucie Mercier" },
+  { id: "104", name: "Paul Roux" },
+  { id: "105", name: "Émilie Bonnet" }
+];
 
 // Initial sample data
 const initialPatients: Patient[] = [
@@ -514,6 +524,7 @@ export default function MedicalRecords() {
         <NewMedicalRecordForm 
           onClose={() => setIsNewRecordDialogOpen(false)}
           onSave={handleAddNewRecord}
+          existingPatients={patientsWithoutRecords}
         />
       </Dialog>
     </Layout>

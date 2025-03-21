@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle } from 'lucide-react';
@@ -8,6 +8,13 @@ import { isAuthenticated } from '@/utils/auth';
 export default function Index() {
   const navigate = useNavigate();
   const authenticated = isAuthenticated();
+  const aboutSectionRef = useRef<HTMLDivElement>(null);
+
+  const scrollToAbout = () => {
+    if (aboutSectionRef.current) {
+      aboutSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -59,13 +66,37 @@ export default function Index() {
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+              onClick={scrollToAbout}
             >
               En savoir plus
             </Button>
           </div>
         </div>
       </main>
+
+      <div ref={aboutSectionRef} className="bg-slate-50 py-16 px-6">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8">À propos de Good Physio</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-xl font-semibold mb-3">Notre mission</h3>
+              <p className="text-muted-foreground">
+                Good Physio a été créé pour simplifier le quotidien des physiothérapeutes et améliorer
+                l'expérience des patients. Notre plateforme permet aux cliniques de toutes tailles
+                de gérer efficacement leurs opérations quotidiennes.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold mb-3">Pourquoi nous choisir</h3>
+              <p className="text-muted-foreground">
+                Notre solution combine facilité d'utilisation et fonctionnalités puissantes,
+                le tout dans une interface intuitive. Nous nous engageons à fournir un support
+                de qualité et des mises à jour régulières.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
