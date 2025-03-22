@@ -212,7 +212,7 @@ const TherapistList: React.FC<TherapistListProps> = ({ therapists, onEdit, onDel
 export default function Admin() {
   const [therapists, setTherapists] = useState<Therapist[]>(initialTherapists);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentTherapist, setCurrentTherapist: any] = useState<Therapist | null>(null);
+  const [currentTherapist, setCurrentTherapist] = useState<Therapist | null>(null);
   const [dialogType, setDialogType] = useState<'add' | 'edit'>('add');
 
   const handleEditTherapist = (therapist: Therapist) => {
