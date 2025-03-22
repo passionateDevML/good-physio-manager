@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Search, Filter, Dumbbell, Tag, FolderOpen } from 'lucide-react';
+import { Plus, Search, Filter, Dumbbell, Tag, FolderOpen, Video, Play } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Mock data - Exercise types
@@ -29,75 +29,18 @@ const difficultyLevels = [
   { id: 'hard', label: 'Difficile' }
 ];
 
-// Mock data - Exercise list
-const initialExercises = [
-  {
-    id: '1',
-    name: 'Étirements des ischio-jambiers',
-    category: 'Étirement',
-    bodyPart: 'Jambes',
-    difficulty: 'easy',
-    description: 'S\'asseoir sur le sol les jambes tendues devant soi. Se pencher en avant pour toucher les orteils en gardant les genoux droits.',
-    instructions: '1. Asseyez-vous sur le sol\n2. Tendez vos jambes devant vous\n3. Penchez-vous en avant sans plier les genoux\n4. Maintenez la position pendant 30 secondes\n5. Répétez 3 fois',
-    imageUrl: '',
-    videoUrl: '',
-  },
-  {
-    id: '2',
-    name: 'Pont fessier',
-    category: 'Renforcement',
-    bodyPart: 'Dos, Fessiers',
-    difficulty: 'medium',
-    description: 'Allongé sur le dos, jambes fléchies, soulever le bassin pour renforcer les muscles fessiers et lombaires.',
-    instructions: '1. Allongez-vous sur le dos\n2. Pliez vos genoux, pieds à plat sur le sol\n3. Soulevez votre bassin vers le plafond\n4. Maintenez 3 secondes puis redescendez\n5. Répétez 10-15 fois',
-    imageUrl: '',
-    videoUrl: '',
-  },
-  {
-    id: '3',
-    name: 'Rotation du buste',
-    category: 'Mobilité',
-    bodyPart: 'Tronc',
-    difficulty: 'easy',
-    description: 'Exercice de rotation du tronc pour améliorer la mobilité du dos et de la colonne vertébrale.',
-    instructions: '1. Tenez-vous debout, pieds écartés à la largeur des épaules\n2. Placez vos mains sur vos hanches\n3. Tournez lentement votre buste vers la droite\n4. Revenez au centre, puis tournez vers la gauche\n5. Répétez 10 fois de chaque côté',
-    imageUrl: '',
-    videoUrl: '',
-  },
-  {
-    id: '4',
-    name: 'Squat simple',
-    category: 'Renforcement',
-    bodyPart: 'Jambes, Fessiers',
-    difficulty: 'medium',
-    description: 'Exercice de renforcement pour les jambes et les fessiers.',
-    instructions: '1. Tenez-vous debout, pieds écartés à la largeur des épaules\n2. Pliez les genoux comme pour vous asseoir\n3. Gardez le dos droit et les talons au sol\n4. Descendez jusqu\'à ce que les cuisses soient parallèles au sol\n5. Remontez et répétez 10-15 fois',
-    imageUrl: '',
-    videoUrl: '',
-  },
-  {
-    id: '5',
-    name: 'Exercice d\'équilibre sur une jambe',
-    category: 'Équilibre',
-    bodyPart: 'Jambes',
-    difficulty: 'medium',
-    description: 'Se tenir en équilibre sur une jambe pour améliorer la stabilité.',
-    instructions: '1. Tenez-vous debout, pieds ensemble\n2. Soulevez lentement une jambe du sol\n3. Maintenez l\'équilibre pendant 30 secondes\n4. Changez de jambe\n5. Répétez 3 fois pour chaque jambe',
-    imageUrl: '',
-    videoUrl: '',
-  },
-  {
-    id: '6',
-    name: 'Étirements des épaules',
-    category: 'Étirement',
-    bodyPart: 'Épaules',
-    difficulty: 'easy',
-    description: 'Étirement pour soulager les tensions dans les épaules.',
-    instructions: '1. Amenez un bras à l\'horizontale devant vous\n2. Avec l\'autre main, tirez doucement le bras vers votre poitrine\n3. Maintenez pendant 30 secondes\n4. Changez de bras\n5. Répétez 2 fois pour chaque bras',
-    imageUrl: '',
-    videoUrl: '',
-  }
-];
+// Define the Exercise type
+interface Exercise {
+  id: string;
+  name: string;
+  category: string;
+  bodyPart: string;
+  difficulty: string;
+  description: string;
+  instructions: string;
+  imageUrl: string;
+  videoUrl: string;
+}
 
 // Exercise form interface
 interface ExerciseFormData {
@@ -112,13 +55,190 @@ interface ExerciseFormData {
   videoUrl: string;
 }
 
+// Mock data - Exercise list
+const initialExercises: Exercise[] = [
+  {
+    id: '1',
+    name: 'Étirements des ischio-jambiers',
+    category: 'Étirement',
+    bodyPart: 'Jambes',
+    difficulty: 'easy',
+    description: 'S\'asseoir sur le sol les jambes tendues devant soi. Se pencher en avant pour toucher les orteils en gardant les genoux droits.',
+    instructions: '1. Asseyez-vous sur le sol\n2. Tendez vos jambes devant vous\n3. Penchez-vous en avant sans plier les genoux\n4. Maintenez la position pendant 30 secondes\n5. Répétez 3 fois',
+    imageUrl: '',
+    videoUrl: 'https://www.youtube.com/embed/9vLBmrQONnM',
+  },
+  {
+    id: '2',
+    name: 'Pont fessier',
+    category: 'Renforcement',
+    bodyPart: 'Dos, Fessiers',
+    difficulty: 'medium',
+    description: 'Allongé sur le dos, jambes fléchies, soulever le bassin pour renforcer les muscles fessiers et lombaires.',
+    instructions: '1. Allongez-vous sur le dos\n2. Pliez vos genoux, pieds à plat sur le sol\n3. Soulevez votre bassin vers le plafond\n4. Maintenez 3 secondes puis redescendez\n5. Répétez 10-15 fois',
+    imageUrl: '',
+    videoUrl: 'https://www.youtube.com/embed/wPM8icPu6H8',
+  },
+  {
+    id: '3',
+    name: 'Rotation du buste',
+    category: 'Mobilité',
+    bodyPart: 'Tronc',
+    difficulty: 'easy',
+    description: 'Exercice de rotation du tronc pour améliorer la mobilité du dos et de la colonne vertébrale.',
+    instructions: '1. Tenez-vous debout, pieds écartés à la largeur des épaules\n2. Placez vos mains sur vos hanches\n3. Tournez lentement votre buste vers la droite\n4. Revenez au centre, puis tournez vers la gauche\n5. Répétez 10 fois de chaque côté',
+    imageUrl: '',
+    videoUrl: 'https://www.youtube.com/embed/hsMoyYs2WfM',
+  },
+  {
+    id: '4',
+    name: 'Squat simple',
+    category: 'Renforcement',
+    bodyPart: 'Jambes, Fessiers',
+    difficulty: 'medium',
+    description: 'Exercice de renforcement pour les jambes et les fessiers.',
+    instructions: '1. Tenez-vous debout, pieds écartés à la largeur des épaules\n2. Pliez les genoux comme pour vous asseoir\n3. Gardez le dos droit et les talons au sol\n4. Descendez jusqu\'à ce que les cuisses soient parallèles au sol\n5. Remontez et répétez 10-15 fois',
+    imageUrl: '',
+    videoUrl: 'https://www.youtube.com/embed/YaXPRqUwItQ',
+  },
+  {
+    id: '5',
+    name: 'Exercice d\'équilibre sur une jambe',
+    category: 'Équilibre',
+    bodyPart: 'Jambes',
+    difficulty: 'medium',
+    description: 'Se tenir en équilibre sur une jambe pour améliorer la stabilité.',
+    instructions: '1. Tenez-vous debout, pieds ensemble\n2. Soulevez lentement une jambe du sol\n3. Maintenez l\'équilibre pendant 30 secondes\n4. Changez de jambe\n5. Répétez 3 fois pour chaque jambe',
+    imageUrl: '',
+    videoUrl: 'https://www.youtube.com/embed/T-X9RP8Uh2M',
+  },
+  {
+    id: '6',
+    name: 'Étirements des épaules',
+    category: 'Étirement',
+    bodyPart: 'Épaules',
+    difficulty: 'easy',
+    description: 'Étirement pour soulager les tensions dans les épaules.',
+    instructions: '1. Amenez un bras à l\'horizontale devant vous\n2. Avec l\'autre main, tirez doucement le bras vers votre poitrine\n3. Maintenez pendant 30 secondes\n4. Changez de bras\n5. Répétez 2 fois pour chaque bras',
+    imageUrl: '',
+    videoUrl: 'https://www.youtube.com/embed/wdKKu-tYYjU',
+  }
+];
+
+// Video player component
+const VideoPlayer = ({ videoUrl }: { videoUrl: string }) => {
+  if (!videoUrl) {
+    return (
+      <div className="flex items-center justify-center h-40 bg-slate-100 rounded-md">
+        <p className="text-slate-400">Aucune vidéo disponible</p>
+      </div>
+    );
+  }
+
+  // Extract YouTube video ID if it's a youtube link
+  if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+    return (
+      <div className="w-full aspect-video">
+        <iframe 
+          src={videoUrl}
+          className="w-full h-full rounded-md"
+          title="Video de l'exercice"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+    );
+  }
+
+  // Handle direct video URL
+  return (
+    <video controls className="w-full h-auto rounded-md">
+      <source src={videoUrl} />
+      Votre navigateur ne supporte pas la lecture vidéo.
+    </video>
+  );
+};
+
+// Exercise detail dialog
+const ExerciseDetail = ({ 
+  exercise, 
+  onClose,
+  onEdit 
+}: { 
+  exercise: Exercise, 
+  onClose: () => void,
+  onEdit: (exercise: Exercise) => void 
+}) => {
+  // Get the difficulty label
+  const getDifficultyLabel = (id: string) => {
+    const difficulty = difficultyLevels.find(d => d.id === id);
+    return difficulty ? difficulty.label : id;
+  };
+
+  return (
+    <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle className="text-xl">{exercise.name}</DialogTitle>
+        <DialogDescription>
+          <div className="flex flex-wrap gap-2 mt-1">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {exercise.category}
+            </span>
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+              {exercise.bodyPart}
+            </span>
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+              {getDifficultyLabel(exercise.difficulty)}
+            </span>
+          </div>
+        </DialogDescription>
+      </DialogHeader>
+      
+      <div className="grid gap-4 py-4">
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Description</h3>
+          <p className="text-sm text-gray-600">{exercise.description}</p>
+        </div>
+        
+        {exercise.videoUrl && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Vidéo</h3>
+            <VideoPlayer videoUrl={exercise.videoUrl} />
+          </div>
+        )}
+        
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Instructions</h3>
+          <div className="text-sm text-gray-600 whitespace-pre-line">
+            {exercise.instructions}
+          </div>
+        </div>
+      </div>
+      
+      <DialogFooter className="flex flex-row justify-end gap-2">
+        <Button variant="outline" onClick={onClose}>
+          Fermer
+        </Button>
+        <Button 
+          variant="default" 
+          onClick={() => onEdit(exercise)}
+        >
+          Modifier
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
 // Exercise card component
 const ExerciseCard = ({ 
   exercise, 
-  onEdit 
+  onEdit,
+  onView
 }: { 
-  exercise: ExerciseFormData, 
-  onEdit: (exercise: ExerciseFormData) => void 
+  exercise: Exercise, 
+  onEdit: (exercise: Exercise) => void,
+  onView: (exercise: Exercise) => void
 }) => {
   // Get the difficulty label
   const getDifficultyLabel = (id: string) => {
@@ -133,6 +253,7 @@ const ExerciseCard = ({
           <CardTitle className="text-lg font-semibold">{exercise.name}</CardTitle>
           <div className="flex gap-1">
             <Dumbbell className="h-4 w-4 text-muted-foreground" />
+            {exercise.videoUrl && <Video className="h-4 w-4 text-muted-foreground" />}
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-1">
@@ -150,14 +271,25 @@ const ExerciseCard = ({
       <CardContent className="py-2 flex-1">
         <p className="text-sm text-gray-600 line-clamp-3">{exercise.description}</p>
       </CardContent>
-      <CardFooter className="pt-2">
+      <CardFooter className="pt-2 flex gap-2">
+        {exercise.videoUrl && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1"
+            onClick={() => onView(exercise)}
+          >
+            <Play className="h-4 w-4 mr-1" />
+            Voir la vidéo
+          </Button>
+        )}
         <Button 
           variant="outline" 
           size="sm" 
-          className="w-full" 
+          className="flex-1" 
           onClick={() => onEdit(exercise)}
         >
-          Voir les détails
+          Modifier
         </Button>
       </CardFooter>
     </Card>
@@ -166,10 +298,12 @@ const ExerciseCard = ({
 
 // Main component
 export default function ExerciseLibrary() {
-  const [exercises, setExercises] = useState(initialExercises);
+  const [exercises, setExercises] = useState<Exercise[]>(initialExercises);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [currentExercise, setCurrentExercise] = useState<ExerciseFormData>({
     name: '',
     category: 'Étirement',
@@ -205,12 +339,12 @@ export default function ExerciseLibrary() {
     if (isEditing) {
       // Update existing exercise
       setExercises(prev => 
-        prev.map(ex => ex.id === currentExercise.id ? currentExercise : ex)
+        prev.map(ex => ex.id === currentExercise.id ? {...currentExercise, id: ex.id} as Exercise : ex)
       );
       toast.success('Exercice mis à jour avec succès');
     } else {
-      // Add new exercise
-      const newExercise = {
+      // Add new exercise with id
+      const newExercise: Exercise = {
         ...currentExercise,
         id: Math.random().toString(36).substring(2, 9),
       };
@@ -222,11 +356,19 @@ export default function ExerciseLibrary() {
     setIsDialogOpen(false);
   };
 
+  // View exercise handler
+  const handleViewExercise = (exercise: Exercise) => {
+    setSelectedExercise(exercise);
+    setIsDetailDialogOpen(true);
+  };
+
   // Edit exercise handler
-  const handleEditExercise = (exercise: ExerciseFormData) => {
+  const handleEditExercise = (exercise: Exercise) => {
     setCurrentExercise(exercise);
     setIsEditing(true);
     setIsDialogOpen(true);
+    // Close detail dialog if open
+    setIsDetailDialogOpen(false);
   };
 
   // New exercise handler
@@ -364,14 +506,17 @@ export default function ExerciseLibrary() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="videoUrl">URL de la vidéo (optionnel)</Label>
+                  <Label htmlFor="videoUrl">URL de la vidéo</Label>
                   <Input
                     id="videoUrl"
                     name="videoUrl"
                     value={currentExercise.videoUrl}
                     onChange={handleInputChange}
-                    placeholder="https://example.com/video.mp4"
+                    placeholder="https://www.youtube.com/embed/videoId"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Pour YouTube, utilisez le format: https://www.youtube.com/embed/VIDEO_ID
+                  </p>
                 </div>
               </div>
             </div>
@@ -382,6 +527,16 @@ export default function ExerciseLibrary() {
           </DialogContent>
         </Dialog>
       </div>
+      
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        {selectedExercise && (
+          <ExerciseDetail 
+            exercise={selectedExercise} 
+            onClose={() => setIsDetailDialogOpen(false)} 
+            onEdit={handleEditExercise}
+          />
+        )}
+      </Dialog>
       
       <div className="bg-white rounded-xl border border-border/50 overflow-hidden mb-8 shadow-soft">
         <div className="p-4 flex flex-col md:flex-row gap-4">
@@ -425,7 +580,8 @@ export default function ExerciseLibrary() {
                       <ExerciseCard 
                         key={exercise.id} 
                         exercise={exercise} 
-                        onEdit={handleEditExercise} 
+                        onEdit={handleEditExercise}
+                        onView={handleViewExercise}
                       />
                     ))}
                   </div>
