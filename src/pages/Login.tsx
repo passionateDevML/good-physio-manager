@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,7 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      const success = login(email, password);
+      const success = await login(email, password);
       
       if (success) {
         toast({
@@ -29,7 +30,7 @@ export default function Login() {
         });
         
         // Determine redirect based on role
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
         const redirectPath = user.role === 'admin' ? '/admin' : '/dashboard';
         
         setTimeout(() => {

@@ -1,13 +1,14 @@
 
 import { 
-  signInWithEmailAndPassword, 
-  signOut, 
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  User as FirebaseUser
-} from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+  doc, 
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // Demo accounts - kept for backward compatibility
 const DEMO_ACCOUNTS = [
@@ -25,10 +26,9 @@ const DEMO_ACCOUNTS = [
   }
 ];
 
-// Flag to toggle between demo mode and Firebase
-// Set to true for demo mode, false for Firebase integration
-// This can be controlled by an environment variable in a real app
-const DEMO_MODE = true;
+// Flag to toggle between demo mode and Firestore
+// Set to true for demo mode, false for Firestore integration
+const DEMO_MODE = false;
 
 // User type definition
 export interface User {
@@ -43,7 +43,8 @@ export const isAuthenticated = (): boolean => {
     const user = localStorage.getItem('user');
     return !!user;
   } else {
-    return !!auth.currentUser;
+    const user = localStorage.getItem('currentUser');
+    return !!user;
   }
 };
 
@@ -55,16 +56,9 @@ export const getCurrentUser = (): User | null => {
     }
     return null;
   } else {
-    const user = auth.currentUser;
+    const user = localStorage.getItem('currentUser');
     if (user) {
-      // We need to fetch the user's custom claims/data from Firestore
-      // For now, return a basic object until we fetch the complete profile
-      return {
-        uid: user.uid,
-        email: user.email || '',
-        name: user.displayName || '',
-        role: 'therapist' // Default role, should be fetched from Firestore
-      };
+      return JSON.parse(user);
     }
     return null;
   }
@@ -73,11 +67,10 @@ export const getCurrentUser = (): User | null => {
 export const logout = async (): Promise<void> => {
   if (DEMO_MODE) {
     localStorage.removeItem('user');
-    window.location.href = '/login';
   } else {
-    await signOut(auth);
-    window.location.href = '/login';
+    localStorage.removeItem('currentUser');
   }
+  window.location.href = '/login';
 };
 
 export const isAdmin = (): boolean => {
@@ -100,33 +93,44 @@ export const login = async (email: string, password: string): Promise<boolean> =
     return false;
   } else {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // Query Firestore for a user with this email
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
       
-      // Fetch user info from Firestore
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as Omit<User, 'uid'>;
-        const userInfo: User = {
-          uid: user.uid,
-          ...userData
-        };
-        // Store in localStorage for consistent interface with demo mode
-        localStorage.setItem('user', JSON.stringify(userInfo));
-        return true;
-      } else {
-        console.error('User document not found in Firestore');
-        await signOut(auth);
+      if (querySnapshot.empty) {
+        console.error('User not found');
         return false;
       }
+      
+      // Get the first user document that matches the email
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+      
+      // Check if the password matches
+      if (userData.password !== password) {
+        console.error('Incorrect password');
+        return false;
+      }
+      
+      // Store user information in localStorage
+      const userInfo: User = {
+        uid: userDoc.id,
+        email: userData.email,
+        name: userData.name,
+        role: userData.role
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(userInfo));
+      return true;
     } catch (error) {
-      console.error('Firebase login error:', error);
+      console.error('Firestore login error:', error);
       return false;
     }
   }
 };
 
-// New method to create a user (for admin use)
+// Create a user (for admin use)
 export const createUser = async (email: string, password: string, name: string, role: 'admin' | 'therapist'): Promise<boolean> => {
   if (DEMO_MODE) {
     // Just simulate user creation in demo mode
@@ -134,15 +138,24 @@ export const createUser = async (email: string, password: string, name: string, 
     return true;
   } else {
     try {
-      // Create the user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // Check if user email already exists
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
       
-      // Store additional user data in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
+      if (!querySnapshot.empty) {
+        console.error('User with this email already exists');
+        return false;
+      }
+      
+      // Create new user document in Firestore
+      const newUserRef = doc(collection(db, 'users'));
+      await setDoc(newUserRef, {
         email,
         name,
-        role
+        password, // Store password directly in Firestore (in a real app, hash it!)
+        role,
+        createdAt: new Date()
       });
       
       return true;
@@ -161,22 +174,19 @@ export const subscribeToAuthChanges = (callback: (user: User | null) => void): (
     callback(user);
     return () => {}; // Empty unsubscribe function
   } else {
-    return onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // Fetch user data from Firestore
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as Omit<User, 'uid'>;
-          callback({
-            uid: firebaseUser.uid,
-            ...userData
-          });
-        } else {
-          callback(null);
-        }
-      } else {
-        callback(null);
-      }
-    });
+    // For Firestore mode, we just check localStorage
+    const user = getCurrentUser();
+    callback(user);
+    
+    // Create a simple listener for localStorage changes
+    const storageListener = () => {
+      const updatedUser = getCurrentUser();
+      callback(updatedUser);
+    };
+    
+    window.addEventListener('storage', storageListener);
+    return () => {
+      window.removeEventListener('storage', storageListener);
+    };
   }
 };

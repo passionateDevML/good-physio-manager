@@ -1,10 +1,9 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { auth, db, storage } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { User } from '@/utils/auth';
 
 interface FirebaseContextType {
-  auth: typeof auth;
   db: typeof db;
   storage: typeof storage;
   currentUser: User | null;
@@ -22,7 +21,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   currentUser 
 }) => {
   const value = {
-    auth,
     db,
     storage,
     currentUser
