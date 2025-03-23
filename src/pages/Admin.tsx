@@ -1,28 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { UserPlus, Edit, Trash2 } from 'lucide-react';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { collection, query, getDocs, doc, setDoc, updateDoc, deleteDoc, where } from 'firebase/firestore';
 import { createUser } from '@/utils/auth';
 import { useFirebase } from '@/context/FirebaseContext';
+import { AdminTherapistList } from '@/components/admin/AdminTherapistList';
+import { TherapistFormDialog } from '@/components/admin/TherapistFormDialog';
+import { AdminStats } from '@/components/admin/AdminStats';
 
-interface Therapist {
+export interface Therapist {
   id: string;
   name: string;
   email: string;
@@ -31,189 +22,8 @@ interface Therapist {
   active: boolean;
 }
 
-const initialTherapists: Therapist[] = [
-  {
-    id: '1',
-    name: 'Dr. Jane Doe',
-    email: 'jane.doe@example.com',
-    specialization: 'Orthopedic',
-    active: true,
-  },
-  {
-    id: '2',
-    name: 'Dr. John Smith',
-    email: 'john.smith@example.com',
-    specialization: 'Neurology',
-    active: false,
-  },
-];
-
-interface TherapistFormProps {
-  isEdit: boolean;
-  therapist: Therapist | null;
-  onSubmit: (data: any) => void;
-  onCancel: () => void;
-}
-
-const TherapistForm: React.FC<TherapistFormProps> = ({ isEdit, therapist, onSubmit, onCancel }) => {
-  const [name, setName] = useState(therapist?.name || '');
-  const [email, setEmail] = useState(therapist?.email || '');
-  const [specialization, setSpecialization] = useState(therapist?.specialization || '');
-  const [password, setPassword] = useState('');
-
-  useEffect(() => {
-    if (therapist) {
-      setName(therapist.name);
-      setEmail(therapist.email);
-      setSpecialization(therapist.specialization);
-    }
-  }, [therapist]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({ name, email, specialization, password });
-  };
-
-  return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>{isEdit ? 'Modifier le thérapeute' : 'Ajouter un thérapeute'}</DialogTitle>
-        <DialogDescription>
-          {isEdit ? 'Modifier les informations du thérapeute.' : 'Ajouter un nouveau thérapeute à la liste.'}
-        </DialogDescription>
-      </DialogHeader>
-      <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="name" className="text-right">
-            Nom
-          </Label>
-          <Input
-            type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="col-span-3"
-            required
-          />
-        </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="email" className="text-right">
-            Email
-          </Label>
-          <Input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="col-span-3"
-            required
-          />
-        </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="specialization" className="text-right">
-            Spécialisation
-          </Label>
-          <Input
-            type="text"
-            id="specialization"
-            value={specialization}
-            onChange={(e) => setSpecialization(e.target.value)}
-            className="col-span-3"
-            required
-          />
-        </div>
-        {!isEdit && (
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="password" className="text-right">
-              Mot de passe
-            </Label>
-            <Input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="col-span-3"
-              required
-            />
-          </div>
-        )}
-        <DialogFooter>
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Annuler
-          </Button>
-          <Button type="submit">
-            {isEdit ? 'Mettre à jour' : 'Ajouter'}
-          </Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
-  );
-};
-
-interface TherapistListProps {
-  therapists: Therapist[];
-  onEdit: (therapist: Therapist) => void;
-  onDelete: (id: string) => void;
-  onToggleStatus: (id: string) => void;
-}
-
-const TherapistList: React.FC<TherapistListProps> = ({ therapists, onEdit, onDelete, onToggleStatus }) => {
-  return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableCaption>A list of your therapists.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Nom</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Spécialisation</TableHead>
-            <TableHead>Statut</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {therapists.map((therapist) => (
-            <TableRow key={therapist.id}>
-              <TableCell className="font-medium">{therapist.name}</TableCell>
-              <TableCell>{therapist.email}</TableCell>
-              <TableCell>{therapist.specialization}</TableCell>
-              <TableCell>
-                <Switch
-                  id={`active-${therapist.id}`}
-                  checked={therapist.active}
-                  onCheckedChange={() => onToggleStatus(therapist.id)}
-                />
-                <Label htmlFor={`active-${therapist.id}`} className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  {therapist.active ? 'Active' : 'Inactive'}
-                </Label>
-              </TableCell>
-              <TableCell className="text-right">
-                <Button variant="ghost" size="sm" onClick={() => onEdit(therapist)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Modifier
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => onDelete(therapist.id)}>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Supprimer
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={5}>
-              {therapists.length} thérapeutes au total
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </div>
-  );
-};
-
 export default function Admin() {
-  const [therapists, setTherapists] = useState<Therapist[]>(initialTherapists);
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentTherapist, setCurrentTherapist] = useState<Therapist | null>(null);
   const [dialogType, setDialogType] = useState<'add' | 'edit'>('add');
@@ -294,16 +104,7 @@ export default function Admin() {
     }
   };
 
-  const handleTherapistListProps = () => {
-    return {
-      therapists,
-      onEdit: handleEditTherapist,
-      onDelete: handleDeleteTherapist,
-      onToggleStatus: handleToggleStatus
-    };
-  };
-
-  const updateTherapist = async (data: any) => {
+  const updateTherapist = async (data: { name: string, specialization: string }) => {
     try {
       if (!currentTherapist) return;
       
@@ -331,7 +132,7 @@ export default function Admin() {
     }
   };
 
-  const addTherapist = async (data: any) => {
+  const addTherapist = async (data: { name: string, email: string, specialization: string, password: string }) => {
     try {
       const success = await createUser(
         data.email, 
@@ -399,7 +200,7 @@ export default function Admin() {
                   Ajouter un thérapeute
                 </Button>
               </DialogTrigger>
-              <TherapistForm
+              <TherapistFormDialog
                 isEdit={dialogType === 'edit'}
                 therapist={currentTherapist}
                 onSubmit={dialogType === 'edit' ? updateTherapist : addTherapist}
@@ -412,22 +213,16 @@ export default function Admin() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <TherapistList {...handleTherapistListProps()} />
+          <AdminTherapistList 
+            therapists={therapists}
+            onEdit={handleEditTherapist}
+            onDelete={handleDeleteTherapist}
+            onToggleStatus={handleToggleStatus}
+          />
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Statistiques</CardTitle>
-          <CardDescription>
-            Aperçu rapide des statistiques de votre cabinet
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>Nombre total de patients: <strong>120</strong></p>
-          <p>Nombre total de rendez-vous ce mois-ci: <strong>85</strong></p>
-        </CardContent>
-      </Card>
+      <AdminStats />
     </Layout>
   );
 }
