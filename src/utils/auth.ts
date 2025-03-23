@@ -9,6 +9,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import bcrypt from 'bcryptjs';
 
 // Demo accounts - kept for backward compatibility
 const DEMO_ACCOUNTS = [
@@ -107,8 +108,10 @@ export const login = async (email: string, password: string): Promise<boolean> =
       const userDoc = querySnapshot.docs[0];
       const userData = userDoc.data();
       
-      // Check if the password matches
-      if (userData.password !== password) {
+      // Check if the password matches using bcrypt
+      const passwordMatch = await bcrypt.compare(password, userData.password);
+      
+      if (!passwordMatch) {
         console.error('Incorrect password');
         return false;
       }
@@ -148,12 +151,16 @@ export const createUser = async (email: string, password: string, name: string, 
         return false;
       }
       
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      
       // Create new user document in Firestore
       const newUserRef = doc(collection(db, 'users'));
       await setDoc(newUserRef, {
         email,
         name,
-        password, // Store password directly in Firestore (in a real app, hash it!)
+        password: hashedPassword, // Store hashed password
         role,
         createdAt: new Date()
       });
