@@ -29,7 +29,7 @@ const DEMO_ACCOUNTS = [
 
 // Flag to toggle between demo mode and Firestore
 // Set to true for demo mode, false for Firestore integration
-const DEMO_MODE = false;
+const DEMO_MODE = true;
 
 // User type definition
 export interface User {
