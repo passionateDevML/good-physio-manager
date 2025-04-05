@@ -35,11 +35,11 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   
-  // Ensure options is always a valid array
+  // Always ensure options is a valid array
   const safeOptions = Array.isArray(options) ? options : []
   
-  // Safely find the selected option
-  const selectedOption = safeOptions.find((option) => option.id === value)
+  // Find the selected option (safely)
+  const selectedOption = safeOptions.find((option) => option?.id === value)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -50,7 +50,7 @@ export function Combobox({
           aria-expanded={open}
           className={cn("w-full justify-between", className)}
         >
-          {selectedOption ? selectedOption.name : placeholder}
+          {selectedOption?.name || placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -59,24 +59,26 @@ export function Combobox({
           <CommandInput placeholder="Rechercher..." />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           {safeOptions.length > 0 && (
-            <CommandGroup className="overflow-y-auto max-h-60">
+            <CommandGroup className="max-h-60 overflow-y-auto">
               {safeOptions.map((option) => (
-                <CommandItem
-                  key={option.id}
-                  value={option.name}
-                  onSelect={() => {
-                    onChange(option.id)
-                    setOpen(false)
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.name}
-                </CommandItem>
+                option && (
+                  <CommandItem
+                    key={option.id}
+                    value={option.name}
+                    onSelect={() => {
+                      onChange(option.id)
+                      setOpen(false)
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === option.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {option.name}
+                  </CommandItem>
+                )
               ))}
             </CommandGroup>
           )}

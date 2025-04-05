@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -154,7 +155,7 @@ const EvaluationForm: React.FC<EvaluationFormProps> = ({ onSave, onCancel }) => 
           </Label>
           <div className="col-span-3">
             <Combobox
-              options={patients}
+              options={patients || []}
               value={formData.patientId}
               onChange={(value) => handleSelectChange('patientId', value)}
               placeholder="Sélectionner un patient"
@@ -202,7 +203,7 @@ const EvaluationForm: React.FC<EvaluationFormProps> = ({ onSave, onCancel }) => 
           </Label>
           <div className="col-span-3">
             <Combobox
-              options={therapists}
+              options={therapists || []}
               value={formData.therapistId}
               onChange={(value) => handleSelectChange('therapistId', value)}
               placeholder="Sélectionner un thérapeute"
