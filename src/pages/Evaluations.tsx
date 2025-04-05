@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, Award } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
@@ -16,6 +16,8 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { Combobox } from '@/components/ui/combobox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface Evaluation {
   id: string;
@@ -154,21 +156,15 @@ const EvaluationForm: React.FC<EvaluationFormProps> = ({ onSave, onCancel }) => 
           <Label htmlFor="patient" className="text-right">
             Patient
           </Label>
-          <Select 
-            value={formData.patientId} 
-            onValueChange={(value) => handleSelectChange('patientId', value)}
-          >
-            <SelectTrigger className="col-span-3">
-              <SelectValue placeholder="Sélectionner un patient" />
-            </SelectTrigger>
-            <SelectContent>
-              {patients.map(patient => (
-                <SelectItem key={patient.id} value={patient.id}>
-                  {patient.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="col-span-3">
+            <Combobox
+              options={patients}
+              value={formData.patientId}
+              onChange={(value) => handleSelectChange('patientId', value)}
+              placeholder="Sélectionner un patient"
+              emptyMessage="Aucun patient trouvé"
+            />
+          </div>
         </div>
         
         <div className="grid grid-cols-4 items-center gap-4">
@@ -208,21 +204,15 @@ const EvaluationForm: React.FC<EvaluationFormProps> = ({ onSave, onCancel }) => 
           <Label htmlFor="therapist" className="text-right">
             Thérapeute
           </Label>
-          <Select 
-            value={formData.therapistId} 
-            onValueChange={(value) => handleSelectChange('therapistId', value)}
-          >
-            <SelectTrigger className="col-span-3">
-              <SelectValue placeholder="Sélectionner un thérapeute" />
-            </SelectTrigger>
-            <SelectContent>
-              {therapists.map(therapist => (
-                <SelectItem key={therapist.id} value={therapist.id}>
-                  {therapist.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="col-span-3">
+            <Combobox
+              options={therapists}
+              value={formData.therapistId}
+              onChange={(value) => handleSelectChange('therapistId', value)}
+              placeholder="Sélectionner un thérapeute"
+              emptyMessage="Aucun thérapeute trouvé"
+            />
+          </div>
         </div>
       </div>
       <DialogFooter>
@@ -241,10 +231,154 @@ const EvaluationForm: React.FC<EvaluationFormProps> = ({ onSave, onCancel }) => 
   );
 };
 
+// New component for scoring evaluations
+interface ScoreEvaluationDialogProps {
+  evaluation: Evaluation;
+  onSave: (id: string, score: string) => void;
+  onCancel: () => void;
+  isOpen: boolean;
+}
+
+const ScoreEvaluationDialog: React.FC<ScoreEvaluationDialogProps> = ({ 
+  evaluation, 
+  onSave, 
+  onCancel,
+  isOpen
+}) => {
+  const [score, setScore] = useState("");
+  const [maxScore, setMaxScore] = useState("100");
+  const [isValid, setIsValid] = useState(false);
+
+  React.useEffect(() => {
+    // Validate that score is a number and not greater than maxScore
+    const scoreNum = parseInt(score);
+    const maxScoreNum = parseInt(maxScore);
+    
+    setIsValid(
+      !isNaN(scoreNum) && 
+      !isNaN(maxScoreNum) && 
+      scoreNum >= 0 && 
+      scoreNum <= maxScoreNum && 
+      maxScoreNum > 0
+    );
+  }, [score, maxScore]);
+
+  const handleSubmit = () => {
+    if (isValid) {
+      onSave(evaluation.id, `${score}/${maxScore}`);
+      setScore("");
+      setMaxScore("100");
+    }
+  };
+
+  return (
+    <AlertDialog open={isOpen} onOpenChange={onCancel}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Attribuer un score</AlertDialogTitle>
+          <AlertDialogDescription>
+            Attribuez un score à l'évaluation pour {evaluation.patientName}.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="flex items-center gap-4">
+            <Input 
+              type="number"
+              placeholder="Score"
+              value={score}
+              onChange={(e) => setScore(e.target.value)}
+              min="0"
+              max={maxScore}
+              className="text-right"
+            />
+            <span className="text-lg font-medium">/</span>
+            <Input 
+              type="number"
+              placeholder="Max"
+              value={maxScore}
+              onChange={(e) => setMaxScore(e.target.value)}
+              min="1"
+              className="text-right"
+            />
+          </div>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel}>Annuler</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleSubmit}
+            disabled={!isValid}
+            className="bg-physio-500 hover:bg-physio-600"
+          >
+            Enregistrer
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
+
+// Evaluation card component to make the code more reusable
+interface EvaluationCardProps {
+  evaluation: Evaluation;
+  onScoreClick?: (evaluation: Evaluation) => void;
+}
+
+const EvaluationCard: React.FC<EvaluationCardProps> = ({ evaluation, onScoreClick }) => {
+  return (
+    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle>{evaluation.title}</CardTitle>
+          {evaluation.status === 'pending' && onScoreClick && (
+            <Button 
+              size="sm" 
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                onScoreClick(evaluation);
+              }}
+              title="Attribuer un score"
+            >
+              <Award size={16} />
+              <span className="sr-only">Attribuer un score</span>
+            </Button>
+          )}
+        </div>
+        <CardDescription>Patient: {evaluation.patientName}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="text-sm">
+          <div className="flex justify-between mb-1">
+            <span className="text-muted-foreground">
+              {evaluation.status === 'pending' ? 'Date programmée:' : 'Date complétée:'}
+            </span>
+            <span>{format(evaluation.date, 'dd MMM yyyy', { locale: fr })}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Thérapeute:</span>
+            <span>{evaluation.therapist}</span>
+          </div>
+          {evaluation.score && (
+            <div className="flex justify-between mt-1">
+              <span className="text-muted-foreground">Score:</span>
+              <span className="font-medium text-green-600">
+                {evaluation.score}
+              </span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function Evaluations() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>(initialEvaluations);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
+  const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
   
   const handleCreateEvaluation = (data: Omit<Evaluation, 'id'>) => {
     const newEvaluation: Evaluation = {
@@ -255,6 +389,23 @@ export default function Evaluations() {
     setEvaluations([...evaluations, newEvaluation]);
     setIsDialogOpen(false);
     toast.success('Évaluation créée avec succès');
+  };
+  
+  const handleOpenScoreDialog = (evaluation: Evaluation) => {
+    setSelectedEvaluation(evaluation);
+    setIsScoreDialogOpen(true);
+  };
+
+  const handleSaveScore = (id: string, score: string) => {
+    setEvaluations(prevEvaluations => 
+      prevEvaluations.map(evaluation => 
+        evaluation.id === id 
+          ? { ...evaluation, score, status: 'completed' as const } 
+          : evaluation
+      )
+    );
+    setIsScoreDialogOpen(false);
+    toast.success('Score ajouté avec succès');
   };
   
   const filteredEvaluations = evaluations.filter(evaluation => {
@@ -318,24 +469,11 @@ export default function Evaluations() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {pendingEvaluations.length > 0 ? (
               pendingEvaluations.map((evaluation) => (
-                <Card key={evaluation.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader className="pb-2">
-                    <CardTitle>{evaluation.title}</CardTitle>
-                    <CardDescription>Patient: {evaluation.patientName}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-muted-foreground">Date programmée:</span>
-                        <span>{format(evaluation.date, 'dd MMM yyyy', { locale: fr })}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Thérapeute:</span>
-                        <span>{evaluation.therapist}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <EvaluationCard
+                  key={evaluation.id}
+                  evaluation={evaluation}
+                  onScoreClick={handleOpenScoreDialog}
+                />
               ))
             ) : (
               <div className="col-span-full text-center py-10 text-muted-foreground">
@@ -349,30 +487,10 @@ export default function Evaluations() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {completedEvaluations.length > 0 ? (
               completedEvaluations.map((evaluation) => (
-                <Card key={evaluation.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader className="pb-2">
-                    <CardTitle>{evaluation.title}</CardTitle>
-                    <CardDescription>Patient: {evaluation.patientName}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-muted-foreground">Date complétée:</span>
-                        <span>{format(evaluation.date, 'dd MMM yyyy', { locale: fr })}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Thérapeute:</span>
-                        <span>{evaluation.therapist}</span>
-                      </div>
-                      {evaluation.score && (
-                        <div className="flex justify-between mt-1">
-                          <span className="text-muted-foreground">Score:</span>
-                          <span className="font-medium text-green-600">{evaluation.score}</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                <EvaluationCard
+                  key={evaluation.id}
+                  evaluation={evaluation}
+                />
               ))
             ) : (
               <div className="col-span-full text-center py-10 text-muted-foreground">
@@ -386,36 +504,11 @@ export default function Evaluations() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredEvaluations.length > 0 ? (
               filteredEvaluations.map((evaluation) => (
-                <Card key={evaluation.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader className="pb-2">
-                    <CardTitle>{evaluation.title}</CardTitle>
-                    <CardDescription>
-                      Patient: {evaluation.patientName}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-muted-foreground">
-                          {evaluation.status === 'pending' ? 'Date programmée:' : 'Date complétée:'}
-                        </span>
-                        <span>{format(evaluation.date, 'dd MMM yyyy', { locale: fr })}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Thérapeute:</span>
-                        <span>{evaluation.therapist}</span>
-                      </div>
-                      {evaluation.score && (
-                        <div className="flex justify-between mt-1">
-                          <span className="text-muted-foreground">Score:</span>
-                          <span className="font-medium text-green-600">
-                            {evaluation.score}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                <EvaluationCard
+                  key={evaluation.id}
+                  evaluation={evaluation}
+                  onScoreClick={evaluation.status === 'pending' ? handleOpenScoreDialog : undefined}
+                />
               ))
             ) : (
               <div className="col-span-full text-center py-10 text-muted-foreground">
@@ -425,6 +518,15 @@ export default function Evaluations() {
           </div>
         </TabsContent>
       </Tabs>
+      
+      {selectedEvaluation && (
+        <ScoreEvaluationDialog
+          evaluation={selectedEvaluation}
+          onSave={handleSaveScore}
+          onCancel={() => setIsScoreDialogOpen(false)}
+          isOpen={isScoreDialogOpen}
+        />
+      )}
     </Layout>
   );
 }
