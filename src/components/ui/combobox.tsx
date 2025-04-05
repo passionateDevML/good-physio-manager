@@ -55,10 +55,7 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <CommandInput placeholder="Rechercher..." className="h-9 flex-1" />
-          </div>
+          <CommandInput placeholder="Rechercher..." className="h-9" />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           <CommandGroup className="max-h-60 overflow-y-auto">
             {safeOptions.map((option) => (
