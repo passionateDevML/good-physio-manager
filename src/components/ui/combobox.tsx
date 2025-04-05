@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import { Check, ChevronsUpDown, Search } from "lucide-react"
+import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,7 +26,7 @@ interface ComboboxProps {
 }
 
 export function Combobox({
-  options,
+  options = [],
   value,
   onChange,
   placeholder,
@@ -35,8 +35,8 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   
-  // Ensure options is always an array to prevent "undefined is not iterable" error
-  const safeOptions = Array.isArray(options) ? options : [];
+  // Ensure options is always a valid array
+  const safeOptions = Array.isArray(options) ? options : []
   
   const selectedOption = safeOptions.find((option) => option.id === value)
 
@@ -55,9 +55,9 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput placeholder="Rechercher..." className="h-9" />
+          <CommandInput placeholder="Rechercher..." />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
-          <CommandGroup className="max-h-60 overflow-y-auto">
+          <CommandGroup>
             {safeOptions.map((option) => (
               <CommandItem
                 key={option.id}

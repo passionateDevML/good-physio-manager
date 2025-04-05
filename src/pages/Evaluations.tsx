@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +28,6 @@ interface Evaluation {
   status: 'pending' | 'completed';
 }
 
-// Mock data
 const initialEvaluations: Evaluation[] = [
   {
     id: '1',
@@ -67,7 +65,6 @@ const initialEvaluations: Evaluation[] = [
   }
 ];
 
-// Mock patient data
 const patients = [
   { id: '1', name: 'Jean Dupont' },
   { id: '2', name: 'Marie Lambert' },
@@ -76,7 +73,6 @@ const patients = [
   { id: '5', name: 'Luc Moreau' }
 ];
 
-// Mock therapist data
 const therapists = [
   { id: '1', name: 'Dr. Martin' },
   { id: '2', name: 'Dr. Bernard' },
@@ -158,7 +154,7 @@ const EvaluationForm: React.FC<EvaluationFormProps> = ({ onSave, onCancel }) => 
           </Label>
           <div className="col-span-3">
             <Combobox
-              options={patients || []}
+              options={patients}
               value={formData.patientId}
               onChange={(value) => handleSelectChange('patientId', value)}
               placeholder="Sélectionner un patient"
@@ -206,7 +202,7 @@ const EvaluationForm: React.FC<EvaluationFormProps> = ({ onSave, onCancel }) => 
           </Label>
           <div className="col-span-3">
             <Combobox
-              options={therapists || []}
+              options={therapists}
               value={formData.therapistId}
               onChange={(value) => handleSelectChange('therapistId', value)}
               placeholder="Sélectionner un thérapeute"
@@ -231,7 +227,6 @@ const EvaluationForm: React.FC<EvaluationFormProps> = ({ onSave, onCancel }) => 
   );
 };
 
-// New component for scoring evaluations
 interface ScoreEvaluationDialogProps {
   evaluation: Evaluation;
   onSave: (id: string, score: string) => void;
@@ -250,7 +245,6 @@ const ScoreEvaluationDialog: React.FC<ScoreEvaluationDialogProps> = ({
   const [isValid, setIsValid] = useState(false);
 
   React.useEffect(() => {
-    // Validate that score is a number and not greater than maxScore
     const scoreNum = parseInt(score);
     const maxScoreNum = parseInt(maxScore);
     
@@ -317,7 +311,6 @@ const ScoreEvaluationDialog: React.FC<ScoreEvaluationDialogProps> = ({
   );
 };
 
-// Evaluation card component to make the code more reusable
 interface EvaluationCardProps {
   evaluation: Evaluation;
   onScoreClick?: (evaluation: Evaluation) => void;
