@@ -35,7 +35,10 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   
-  const selectedOption = options.find((option) => option.id === value)
+  // Ensure options is always an array to prevent "undefined is not iterable" error
+  const safeOptions = Array.isArray(options) ? options : [];
+  
+  const selectedOption = safeOptions.find((option) => option.id === value)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -58,7 +61,7 @@ export function Combobox({
           </div>
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           <CommandGroup className="max-h-60 overflow-y-auto">
-            {options.map((option) => (
+            {safeOptions.map((option) => (
               <CommandItem
                 key={option.id}
                 value={option.name}
