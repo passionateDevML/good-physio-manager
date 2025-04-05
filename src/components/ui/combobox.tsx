@@ -38,6 +38,7 @@ export function Combobox({
   // Ensure options is always a valid array
   const safeOptions = Array.isArray(options) ? options : []
   
+  // Safely find the selected option
   const selectedOption = safeOptions.find((option) => option.id === value)
 
   return (
@@ -57,26 +58,28 @@ export function Combobox({
         <Command>
           <CommandInput placeholder="Rechercher..." />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
-          <CommandGroup>
-            {safeOptions.map((option) => (
-              <CommandItem
-                key={option.id}
-                value={option.name}
-                onSelect={() => {
-                  onChange(option.id)
-                  setOpen(false)
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === option.id ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {option.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          {safeOptions.length > 0 && (
+            <CommandGroup className="overflow-y-auto max-h-60">
+              {safeOptions.map((option) => (
+                <CommandItem
+                  key={option.id}
+                  value={option.name}
+                  onSelect={() => {
+                    onChange(option.id)
+                    setOpen(false)
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
         </Command>
       </PopoverContent>
     </Popover>
