@@ -10,25 +10,18 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive>
->(({ className, children, ...props }, ref) => {
-  // Only render if children are provided
-  if (!children) {
-    return null;
-  }
-  
-  return (
-    <CommandPrimitive
-      ref={ref}
-      className={cn(
-        "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </CommandPrimitive>
-  );
-})
+>(({ className, children, ...props }, ref) => (
+  <CommandPrimitive
+    ref={ref}
+    className={cn(
+      "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </CommandPrimitive>
+));
 
 Command.displayName = CommandPrimitive.displayName
 
@@ -95,8 +88,8 @@ const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
 >(({ className, children, ...props }, ref) => {
-  // Only render if children are provided
-  if (!children) {
+  // Skip rendering if there are no children
+  if (!children || (Array.isArray(children) && children.length === 0)) {
     return null;
   }
   

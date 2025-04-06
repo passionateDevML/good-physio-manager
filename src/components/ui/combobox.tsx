@@ -36,10 +36,10 @@ export function Combobox({
   const [open, setOpen] = React.useState(false)
   
   // Ensure options is always a valid array
-  const safeOptions = Array.isArray(options) ? options : []
+  const safeOptions = Array.isArray(options) ? options : [];
   
   // Find the selected option (safely)
-  const selectedOption = safeOptions.find((option) => option?.id === value)
+  const selectedOption = safeOptions.find((option) => option?.id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -55,39 +55,32 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        {/* Only render Command when options are available and we're open */}
-        {open && (
-          <Command>
-            <CommandInput placeholder="Rechercher..." />
-            <CommandEmpty>{emptyMessage}</CommandEmpty>
-            <CommandGroup className="max-h-60 overflow-y-auto">
-              {safeOptions.length > 0 ? safeOptions.map((option) => (
-                option && (
-                  <CommandItem
-                    key={option.id}
-                    value={option.name || ""}
-                    onSelect={() => {
-                      onChange(option.id)
-                      setOpen(false)
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === option.id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {option.name}
-                  </CommandItem>
-                )
-              )) : (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  {emptyMessage}
-                </div>
-              )}
-            </CommandGroup>
-          </Command>
-        )}
+        <Command>
+          <CommandInput placeholder="Rechercher..." />
+          <CommandEmpty>{emptyMessage}</CommandEmpty>
+          <CommandGroup className="max-h-60 overflow-y-auto">
+            {safeOptions.map((option) => (
+              option && (
+                <CommandItem
+                  key={option.id}
+                  value={option.name || ""}
+                  onSelect={() => {
+                    onChange(option.id)
+                    setOpen(false)
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option.name}
+                </CommandItem>
+              )
+            ))}
+          </CommandGroup>
+        </Command>
       </PopoverContent>
     </Popover>
   )

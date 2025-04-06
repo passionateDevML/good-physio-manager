@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -10,20 +11,20 @@ import { EvaluationForm } from '@/components/evaluation/EvaluationForm';
 import { ScoreDialog } from '@/components/evaluation/ScoreDialog';
 import { EvaluationSummary } from '@/components/evaluation/EvaluationSummary';
 
-// Initialize mock data for patients and therapists with explicit empty arrays as fallbacks
+// Initialize mock data for patients and therapists
 const patients = [
   { id: '1', name: 'Jean Dupont' },
   { id: '2', name: 'Marie Lambert' },
   { id: '3', name: 'Pierre Lefebvre' },
   { id: '4', name: 'Sophie Martin' },
   { id: '5', name: 'Luc Moreau' }
-] || [];
+];
 
 const therapists = [
   { id: '1', name: 'Dr. Martin' },
   { id: '2', name: 'Dr. Bernard' },
   { id: '3', name: 'Dr. Dubois' }
-] || [];
+];
 
 // Current therapist (would come from auth context in a real app)
 const currentTherapist = {
@@ -78,18 +79,15 @@ const initialEvaluations = [
 ];
 
 export default function Evaluations() {
-  const [evaluations, setEvaluations] = useState(initialEvaluations || []);
+  const [evaluations, setEvaluations] = useState(initialEvaluations);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvaluation, setSelectedEvaluation] = useState<any | null>(null);
   const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
   
   const handleCreateEvaluation = (data: any) => {
-    const safePatients = Array.isArray(patients) ? patients : [];
-    const safeTherapists = Array.isArray(therapists) ? therapists : [];
-    
-    const patient = safePatients.find(p => p.id === data.patientId);
-    const therapist = safeTherapists.find(t => t.id === data.therapistId);
+    const patient = patients.find(p => p.id === data.patientId);
+    const therapist = therapists.find(t => t.id === data.therapistId);
     
     if (!patient || !therapist) {
       toast.error('Patient ou thérapeute invalide');
@@ -130,21 +128,19 @@ export default function Evaluations() {
     toast.success('Score ajouté avec succès');
   };
   
-  // Ensure we're always filtering a valid array
-  const filteredEvaluations = Array.isArray(evaluations) 
-    ? evaluations.filter(evaluation => {
-        if (searchQuery === '') return true;
-        
-        const lowercaseQuery = searchQuery.toLowerCase();
-        return (
-          evaluation.patientName.toLowerCase().includes(lowercaseQuery) ||
-          evaluation.title.toLowerCase().includes(lowercaseQuery) ||
-          evaluation.therapist.toLowerCase().includes(lowercaseQuery) ||
-          (evaluation.consultationReason && 
-            evaluation.consultationReason.toLowerCase().includes(lowercaseQuery))
-        );
-      })
-    : [];
+  // Filter evaluations
+  const filteredEvaluations = evaluations.filter(evaluation => {
+    if (searchQuery === '') return true;
+    
+    const lowercaseQuery = searchQuery.toLowerCase();
+    return (
+      evaluation.patientName.toLowerCase().includes(lowercaseQuery) ||
+      evaluation.title.toLowerCase().includes(lowercaseQuery) ||
+      evaluation.therapist.toLowerCase().includes(lowercaseQuery) ||
+      (evaluation.consultationReason && 
+        evaluation.consultationReason.toLowerCase().includes(lowercaseQuery))
+    );
+  });
   
   const pendingEvaluations = filteredEvaluations.filter(e => e.status === 'pending');
   const completedEvaluations = filteredEvaluations.filter(e => e.status === 'completed');
