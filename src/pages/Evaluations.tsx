@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -98,11 +97,11 @@ export default function Evaluations() {
       id: (evaluations.length + 1).toString(),
       title: 'Évaluation physiothérapeutique',
       patientName: patient.name,
-      date: data.date,
+      date: data.date || new Date(),
       therapist: therapist.name,
       status: 'pending' as const,
-      consultationReason: data.consultationReason,
-      dailyActivitiesPercentage: data.dailyActivitiesPercentage,
+      consultationReason: data.consultationReason || '',
+      dailyActivitiesPercentage: data.dailyActivitiesPercentage || 0,
       ...data
     };
     

@@ -35,13 +35,23 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   
-  // Ensure options is always a valid array and filter out any undefined or null options
-  const safeOptions = Array.isArray(options) 
-    ? options.filter(option => option !== null && option !== undefined && typeof option === 'object')
-    : [];
+  // Create a safe options array, ensuring we never provide undefined elements
+  const safeOptions = React.useMemo(() => {
+    if (!Array.isArray(options)) {
+      return [];
+    }
+    // Filter out anything that's not a valid option object
+    return options.filter(option => 
+      option !== null && 
+      option !== undefined && 
+      typeof option === 'object' &&
+      'id' in option &&
+      'name' in option
+    );
+  }, [options]);
   
   // Find the selected option (safely)
-  const selectedOption = safeOptions.find((option) => option?.id === value);
+  const selectedOption = safeOptions.find((option) => option.id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -60,15 +70,15 @@ export function Combobox({
         <Command>
           <CommandInput placeholder="Rechercher..." />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
-          {safeOptions && safeOptions.length > 0 ? (
-            <CommandGroup className="max-h-60 overflow-y-auto">
+          {safeOptions.length > 0 && (
+            <CommandGroup>
               {safeOptions.map((option) => (
                 <CommandItem
                   key={option.id}
-                  value={option.name || ""}
+                  value={option.name}
                   onSelect={() => {
-                    onChange(option.id)
-                    setOpen(false)
+                    onChange(option.id);
+                    setOpen(false);
                   }}
                 >
                   <Check
@@ -81,9 +91,9 @@ export function Combobox({
                 </CommandItem>
               ))}
             </CommandGroup>
-          ) : null}
+          )}
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
