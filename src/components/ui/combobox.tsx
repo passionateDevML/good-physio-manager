@@ -58,30 +58,28 @@ export function Combobox({
         <Command>
           <CommandInput placeholder="Rechercher..." />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
-          {safeOptions.length > 0 && (
-            <CommandGroup className="max-h-60 overflow-y-auto">
-              {safeOptions.map((option) => (
-                option && (
-                  <CommandItem
-                    key={option.id}
-                    value={option.name}
-                    onSelect={() => {
-                      onChange(option.id)
-                      setOpen(false)
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === option.id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {option.name}
-                  </CommandItem>
-                )
-              ))}
-            </CommandGroup>
-          )}
+          <CommandGroup className="max-h-60 overflow-y-auto">
+            {safeOptions.length > 0 && safeOptions.map((option) => (
+              option && (
+                <CommandItem
+                  key={option.id}
+                  value={option.name}
+                  onSelect={() => {
+                    onChange(option.id)
+                    setOpen(false)
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option.name}
+                </CommandItem>
+              )
+            ))}
+          </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>

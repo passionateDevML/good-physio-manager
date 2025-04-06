@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,6 +48,10 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
   const [patientId, setPatientId] = useState<string>("");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [therapistId, setTherapistId] = useState<string>(currentTherapist?.id || "");
+  
+  // Ensure arrays are properly initialized
+  const safePatients = Array.isArray(patients) ? patients : [];
+  const safeTherapists = Array.isArray(therapists) ? therapists : [];
   
   const [formData, setFormData] = useState({
     // Motif de Consultation
@@ -100,7 +105,7 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
   const handlePatientSelect = (id: string) => {
     setPatientId(id);
     // In a real app, you would fetch patient details here
-    const patient = patients.find(p => p.id === id);
+    const patient = safePatients.find(p => p.id === id);
     if (patient) {
       setSelectedPatient({
         ...patient,
@@ -167,7 +172,7 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
             <div>
               <Label htmlFor="patient">Patient</Label>
               <Combobox
-                options={patients || []}
+                options={safePatients}
                 value={patientId}
                 onChange={handlePatientSelect}
                 placeholder="Sélectionner un patient"
@@ -177,7 +182,7 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
             <div>
               <Label htmlFor="therapist">Thérapeute</Label>
               <Combobox
-                options={therapists || []}
+                options={safeTherapists}
                 value={therapistId}
                 onChange={(value) => setTherapistId(value)}
                 placeholder="Sélectionner un thérapeute"
