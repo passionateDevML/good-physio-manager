@@ -85,6 +85,7 @@ export default function Evaluations() {
   const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
   
   const handleCreateEvaluation = (data: any) => {
+    // Safely find patient and therapist
     const patient = patients.find(p => p.id === data.patientId);
     const therapist = therapists.find(t => t.id === data.therapistId);
     
@@ -111,6 +112,7 @@ export default function Evaluations() {
   };
   
   const handleOpenScoreDialog = (evaluation: any) => {
+    if (!evaluation) return;
     setSelectedEvaluation(evaluation);
     setIsScoreDialogOpen(true);
   };

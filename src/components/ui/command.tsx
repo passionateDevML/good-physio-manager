@@ -11,7 +11,7 @@ const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive>
 >(({ className, children, ...props }, ref) => {
-  // Ensure children is valid before rendering - filter out nulls and undefined
+  // Ensure children is an array and filter out null/undefined values
   const validChildren = React.Children.toArray(children).filter(Boolean);
   
   return (
@@ -69,13 +69,20 @@ CommandInput.displayName = CommandPrimitive.Input.displayName
 const CommandList = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.List
-    ref={ref}
-    className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
-    {...props}
-  />
-))
+>(({ className, children, ...props }, ref) => {
+  // Filter out null or undefined children
+  const validChildren = React.Children.toArray(children).filter(Boolean);
+  
+  return (
+    <CommandPrimitive.List
+      ref={ref}
+      className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
+      {...props}
+    >
+      {validChildren}
+    </CommandPrimitive.List>
+  );
+})
 
 CommandList.displayName = CommandPrimitive.List.displayName
 
