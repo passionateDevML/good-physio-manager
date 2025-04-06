@@ -35,8 +35,10 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   
-  // Ensure options is always a valid array
-  const safeOptions = Array.isArray(options) ? options : [];
+  // Ensure options is always a valid array and filter out any undefined or null options
+  const safeOptions = Array.isArray(options) 
+    ? options.filter(option => option !== null && option !== undefined)
+    : [];
   
   // Find the selected option (safely)
   const selectedOption = safeOptions.find((option) => option?.id === value);
@@ -58,12 +60,12 @@ export function Combobox({
         <Command>
           <CommandInput placeholder="Rechercher..." />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
-          <CommandGroup className="max-h-60 overflow-y-auto">
-            {safeOptions.map((option) => (
-              option && (
+          {safeOptions.length > 0 ? (
+            <CommandGroup className="max-h-60 overflow-y-auto">
+              {safeOptions.map((option) => (
                 <CommandItem
                   key={option.id}
-                  value={option.name || ""}
+                  value={option.name}
                   onSelect={() => {
                     onChange(option.id)
                     setOpen(false)
@@ -77,9 +79,9 @@ export function Combobox({
                   />
                   {option.name}
                 </CommandItem>
-              )
-            ))}
-          </CommandGroup>
+              ))}
+            </CommandGroup>
+          ) : null}
         </Command>
       </PopoverContent>
     </Popover>
