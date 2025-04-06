@@ -37,7 +37,7 @@ export function Combobox({
   
   // Ensure options is always a valid array and filter out any undefined or null options
   const safeOptions = Array.isArray(options) 
-    ? options.filter(option => option !== null && option !== undefined)
+    ? options.filter(option => option !== null && option !== undefined && typeof option === 'object')
     : [];
   
   // Find the selected option (safely)
@@ -60,12 +60,12 @@ export function Combobox({
         <Command>
           <CommandInput placeholder="Rechercher..." />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
-          {safeOptions.length > 0 ? (
+          {safeOptions && safeOptions.length > 0 ? (
             <CommandGroup className="max-h-60 overflow-y-auto">
               {safeOptions.map((option) => (
                 <CommandItem
                   key={option.id}
-                  value={option.name}
+                  value={option.name || ""}
                   onSelect={() => {
                     onChange(option.id)
                     setOpen(false)

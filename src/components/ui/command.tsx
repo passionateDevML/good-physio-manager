@@ -10,18 +10,23 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive>
->(({ className, children, ...props }, ref) => (
-  <CommandPrimitive
-    ref={ref}
-    className={cn(
-      "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
-      className
-    )}
-    {...props}
-  >
-    {children}
-  </CommandPrimitive>
-));
+>(({ className, children, ...props }, ref) => {
+  // Ensure children is valid before rendering
+  const validChildren = React.Children.toArray(children).filter(child => child !== null && child !== undefined);
+  
+  return (
+    <CommandPrimitive
+      ref={ref}
+      className={cn(
+        "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
+        className
+      )}
+      {...props}
+    >
+      {validChildren}
+    </CommandPrimitive>
+  );
+});
 
 Command.displayName = CommandPrimitive.displayName
 
@@ -95,6 +100,16 @@ const CommandGroup = React.forwardRef<
     return null;
   }
   
+  // Filter out null/undefined children
+  const validChildren = React.Children.toArray(children).filter(child => 
+    child !== null && child !== undefined
+  );
+  
+  // Only render if we have valid children
+  if (validChildren.length === 0) {
+    return null;
+  }
+  
   return (
     <CommandPrimitive.Group
       ref={ref}
@@ -104,7 +119,7 @@ const CommandGroup = React.forwardRef<
       )}
       {...props}
     >
-      {children}
+      {validChildren}
     </CommandPrimitive.Group>
   )
 })
