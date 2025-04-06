@@ -35,22 +35,14 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   
-  // Create a safe options array, ensuring we never provide undefined elements
+  // Create a safe options array
   const safeOptions = React.useMemo(() => {
-    if (!Array.isArray(options)) {
-      return [];
-    }
-    // Filter out anything that's not a valid option object
-    return options.filter(option => 
-      option !== null && 
-      option !== undefined && 
-      typeof option === 'object' &&
-      'id' in option &&
-      'name' in option
-    );
+    return Array.isArray(options) ? options.filter(option => 
+      option && typeof option === 'object' && 'id' in option && 'name' in option
+    ) : [];
   }, [options]);
   
-  // Find the selected option (safely)
+  // Find the selected option
   const selectedOption = safeOptions.find((option) => option.id === value);
 
   return (
@@ -70,28 +62,26 @@ export function Combobox({
         <Command>
           <CommandInput placeholder="Rechercher..." />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
-          {safeOptions.length > 0 && (
-            <CommandGroup>
-              {safeOptions.map((option) => (
-                <CommandItem
-                  key={option.id}
-                  value={option.name}
-                  onSelect={() => {
-                    onChange(option.id);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
+          <CommandGroup>
+            {safeOptions.map((option) => (
+              <CommandItem
+                key={option.id}
+                value={option.name}
+                onSelect={() => {
+                  onChange(option.id);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    value === option.id ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {option.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>
