@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,8 +36,8 @@ interface EvaluationFormProps {
 }
 
 export const EvaluationForm: React.FC<EvaluationFormProps> = ({ 
-  patients, 
-  therapists, 
+  patients = [], 
+  therapists = [], 
   onSave, 
   onCancel,
   currentTherapist 

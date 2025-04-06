@@ -35,7 +35,7 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   
-  // Always ensure options is a valid array
+  // Ensure options is always a valid array
   const safeOptions = Array.isArray(options) ? options : []
   
   // Find the selected option (safely)

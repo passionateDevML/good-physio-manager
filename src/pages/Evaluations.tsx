@@ -11,7 +11,7 @@ import { EvaluationForm } from '@/components/evaluation/EvaluationForm';
 import { ScoreDialog } from '@/components/evaluation/ScoreDialog';
 import { EvaluationSummary } from '@/components/evaluation/EvaluationSummary';
 
-// Mock data for patients and therapists
+// Mock data for patients and therapists - ensure arrays are properly initialized
 const patients = [
   { id: '1', name: 'Jean Dupont' },
   { id: '2', name: 'Marie Lambert' },
