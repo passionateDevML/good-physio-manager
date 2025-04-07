@@ -34,6 +34,7 @@ export function Combobox({
   className
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
+  const [searchQuery, setSearchQuery] = React.useState("")
   
   // Create a safe options array
   const safeOptions = React.useMemo(() => {
@@ -44,6 +45,30 @@ export function Combobox({
   
   // Find the selected option
   const selectedOption = safeOptions.find((option) => option.id === value);
+  
+  // Filter options based on search query
+  const filteredOptions = React.useMemo(() => {
+    if (!searchQuery) return safeOptions;
+    return safeOptions.filter((option) => 
+      option.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [safeOptions, searchQuery]);
+
+  // Handle the search input change
+  const handleSearchChange = (inputValue: string) => {
+    setSearchQuery(inputValue);
+  };
+
+  // Handle selection
+  const handleSelect = (selectedValue: string) => {
+    // Find the option with the matching name
+    const option = safeOptions.find((opt) => opt.name === selectedValue);
+    if (option) {
+      onChange(option.id);
+      setOpen(false);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -53,24 +78,26 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           className={cn("w-full justify-between", className)}
+          onClick={() => setOpen(!open)}
         >
           {selectedOption?.name || placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Rechercher..." />
+      <PopoverContent className="w-full p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput 
+            placeholder="Rechercher..." 
+            value={searchQuery}
+            onValueChange={handleSearchChange}
+          />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           <CommandGroup>
-            {safeOptions.map((option) => (
+            {filteredOptions.map((option) => (
               <CommandItem
                 key={option.id}
                 value={option.name}
-                onSelect={() => {
-                  onChange(option.id);
-                  setOpen(false);
-                }}
+                onSelect={handleSelect}
               >
                 <Check
                   className={cn(
